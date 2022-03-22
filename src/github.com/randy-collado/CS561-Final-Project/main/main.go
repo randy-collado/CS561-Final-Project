@@ -9,6 +9,13 @@ import (
 
 const maxInt = math.MaxInt32
 
+type tree interface {
+	Insert(key int, value int)
+	Find(key int) *[]int
+	Delete(key int)
+	DeleteWithMatch(key int, predicate func(arg int) bool) bool
+}
+
 type BinaryTree struct {
 	head    *Node
 	size    int
@@ -23,8 +30,8 @@ type Node struct {
 	values []int
 }
 
-func Insert(tree *BinaryTree, key int, value int) {
-	SearchAndInsert(tree, key, value)
+func (tree *BinaryTree) Insert(key int, value int) {
+	tree.SearchAndInsert(key, value)
 }
 
 func OutputTree(tree BinaryTree, initialLevel int) {
@@ -38,11 +45,11 @@ func OutputTree(tree BinaryTree, initialLevel int) {
 	}
 }
 
-func NewTree() BinaryTree {
-	return BinaryTree{head: nil, size: 0, max_key: 0, min_key: maxInt}
+func New() *BinaryTree {
+	return &BinaryTree{head: nil, size: 0, max_key: 0, min_key: maxInt}
 }
 
-func Find(tree *BinaryTree, key int) *[]int {
+func (tree *BinaryTree) Find(key int) *[]int {
 	currentNode := tree.head
 	var lastNode *Node
 	if currentNode == nil {
@@ -64,12 +71,12 @@ func Find(tree *BinaryTree, key int) *[]int {
 	return nil
 }
 
-func Delete(tree *BinaryTree, key int) {
-	DeleteWithMatch(tree, key, nil)
+func (tree *BinaryTree) Delete(key int) {
+	tree.DeleteWithMatch(key, nil)
 }
 
-func DeleteWithMatch(tree *BinaryTree, key int, predicate func(arg int) bool) bool {
-	nodeValues := Find(tree, key)
+func (tree *BinaryTree) DeleteWithMatch(key int, predicate func(arg int) bool) bool {
+	nodeValues := tree.Find(key)
 	if nodeValues == nil {
 		fmt.Fprintf(os.Stderr, "Error: key %d not found", key)
 		return false
@@ -89,7 +96,39 @@ func DeleteWithMatch(tree *BinaryTree, key int, predicate func(arg int) bool) bo
 	return true
 }
 
-func SearchAndInsert(tree *BinaryTree, key int, value int) {
+func (tree *BinaryTree) SearchAndInsert_concurrent(key int, value int){
+	currentNode := tree.head
+	var lastNode *Node
+	if currentNode == nil {
+		tree.head = &Node{left: nil, right: nil, key: key, values: []int{value}}
+		return
+	}
+	for currentNode != nil && currentNode.key != key && !(currentNode.left != nil && currentNode.right != nil) {
+		lastNode = currentNode
+		if key < currentNode.key {
+			currentNode = currentNode.left
+		} else {
+			currentNode = currentNode.right
+		}
+	}
+
+	if currentNode.left != nil && currentNode.right != nil{
+		
+	}
+
+	if currentNode != nil {
+		currentNode.values = append(currentNode.values, value)
+	} else {
+		if key < lastNode.key {
+			lastNode.left = &Node{left: nil, right: nil, key: key, values: []int{value}}
+		} else {
+			lastNode.right = &Node{left: nil, right: nil, key: key, values: []int{value}}
+		}
+	}
+	tree.size++
+}
+
+func (tree *BinaryTree) SearchAndInsert(key int, value int) {
 	currentNode := tree.head
 	var lastNode *Node
 	if currentNode == nil {
@@ -117,24 +156,41 @@ func SearchAndInsert(tree *BinaryTree, key int, value int) {
 	tree.size++
 }
 
-func main() {
-	tree := NewTree()
-	Insert(&tree, 17, 5)
-	Insert(&tree, 63, 5)
-	Insert(&tree, 12, 5)
-	Insert(&tree, 3, 5)
-	Insert(&tree, 38, 5)
-	Insert(&tree, 43, 5)
-	Insert(&tree, 7, 5)
-	Insert(&tree, 2, 5)
-	Insert(&tree, 9, 5)
-	Insert(&tree, 9, 7)
+func DeleteTest(tree *BinaryTree, key int) {
+	fmt.Printf("Delete Key %d\n", key)
+	start := time.Now()
+	tree.DeleteWithMatch(9, func(arg int) bool {
+		if arg < 6 {
+			return true
+		} else {
+			return false
+		}
+	})
+	end := time.Now()
+	elapsed := end.Sub(start)
+	ret := tree.Find(key)
+
+	fmt.Printf("key: %d -> ", key)
+	fmt.Printf("value: %v\n", *ret)
+	fmt.Printf("\nElapsed time: %d ns\n\n", elapsed.Nanoseconds())
+}
+func InsertTest(tree *BinaryTree) {
+	tree.Insert(17, 5)
+	tree.Insert(63, 5)
+	tree.Insert(12, 5)
+	tree.Insert(3, 5)
+	tree.Insert(38, 5)
+	tree.Insert(43, 5)
+	tree.Insert(7, 5)
+	tree.Insert(2, 5)
+	tree.Insert(9, 5)
+	tree.Insert(9, 7)
 
 	key := 9
 
 	fmt.Printf("Search Key %d\n", key)
 	start := time.Now()
-	ret := Find(&tree, key)
+	ret := tree.Find(key)
 	end := time.Now()
 
 	elapsed := end.Sub(start)
@@ -144,23 +200,11 @@ func main() {
 	fmt.Printf("Elapsed time: %d ns\n", elapsed.Nanoseconds())
 
 	fmt.Print("\n")
+}
 
-	fmt.Printf("Delete Key %d\n", key)
-	start = time.Now()
-	DeleteWithMatch(&tree, 9, func(arg int) bool {
-		if arg < 6 {
-			return true
-		} else {
-			return false
-		}
-	})
-	end = time.Now()
-	elapsed = end.Sub(start)
-	ret = Find(&tree, key)
-
-	fmt.Printf("key: %d -> ", key)
-	fmt.Printf("value: %v\n", *ret)
-	fmt.Printf("\nElapsed time: %d ns\n\n", elapsed.Nanoseconds())
-
-	OutputTree(tree, 0)
+func main() {
+	tree := New()
+	InsertTest(tree)
+	DeleteTest(tree, 9)
+	OutputTree(*tree, 0)
 }
