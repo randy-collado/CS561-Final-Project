@@ -3,6 +3,7 @@ package main
 import (
 	"math/rand"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -23,6 +24,18 @@ type Task struct {
 var found bool
 
 var terminated bool
+
+var taskPool = sync.Pool{
+	New: func() interface{} {
+		return new(Task)
+	},
+}
+
+var nodePool = sync.Pool{
+	New: func() interface{} {
+		return new(Node)
+	},
+}
 
 func worker(glTaskChan chan *Task, num int) {
 	var curTask *Task = nil
@@ -48,17 +61,25 @@ func worker(glTaskChan chan *Task, num int) {
 					found = true
 					return
 				}
-				tmpTask := Task{chNode, 1, 1, curTask.key}
+				tmpTask := taskPool.Get().(*Task)
+				tmpTask.node = chNode
+				tmpTask.srhType = 1
+				tmpTask.depth = 1
+				tmpTask.key = curTask.key
+				// tmpTask := Task{chNode, 1, 1, curTask.key}
 				if !flag {
-					nextTask = &tmpTask
+					nextTask = tmpTask
 					flag = true
 				} else {
 					// Send new task
-					glTaskChan <- &tmpTask
+					glTaskChan <- tmpTask
 				}
 
 			}
 		} // else if other searching type
+
+		// Finish this task
+		taskPool.Put(curTask)
 		curTask = nextTask
 		nextTask = nil
 	}
@@ -70,16 +91,19 @@ func scheduler(root *Node, resKey int) {
 	cpus := runtime.NumCPU()
 	runtime.GOMAXPROCS(cpus)
 
-	workerNum := cpus - 1
+	workerNum := cpus
 
-	glTaskChan := make(chan *Task, 10000000)
+	glTaskChan := make(chan *Task, 1000000)
 
 	for i := 0; i < workerNum; i++ {
 		go worker(glTaskChan, i)
 	}
-
-	initTask := Task{root, 1, 1, resKey}
-	glTaskChan <- &initTask
+	initTask := taskPool.Get().(*Task)
+	initTask.node = root
+	initTask.depth = 1
+	initTask.key = resKey
+	initTask.srhType = 1
+	glTaskChan <- initTask
 
 	timeOut := 0
 	for {
@@ -190,7 +214,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	root := Node{-1, nil, nil}
-	maxDepth := 20
+	maxDepth := 18
 	genCnt = 0
 	gen_tree(&root, maxDepth)
 
@@ -217,8 +241,8 @@ func main() {
 	elapTime = time.Since(startTime) / time.Millisecond
 	println("Serial IDDFS: ", elapTime, "ms")
 
-	// startTime = time.Now()
-	// scheduler(&root, resKey)
-	// elapTime = time.Since(startTime) / time.Millisecond
-	// println("Parallel BFS: ", elapTime, "ms")
+	startTime = time.Now()
+	scheduler(&root, resKey)
+	elapTime = time.Since(startTime) / time.Millisecond
+	println("Parallel BFS: ", elapTime, "ms")
 }
