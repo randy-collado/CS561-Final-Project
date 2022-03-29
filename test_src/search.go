@@ -143,23 +143,36 @@ func gen_tree(curNode *Node, curDepth int, maxBreadth int) {
 }
 
 func serial_bfs(root *Node, resKey int) {
-	var nodeList []*Node
-	nodeList = append(nodeList, root)
+	list1 := make([]*Node, 0)
+	list2 := make([]*Node, 0)
+
+	list1 = append(list1, root)
 	flag := false
-	var curNode *Node
+	// var curNode *Node
 	for {
-		if flag || len(nodeList) == 0 {
+		if flag || len(list1) == 0 {
 			break
 		}
-		curNode = nodeList[0]
-		nodeList = nodeList[1:]
-		for _, chNode := range curNode.ch {
-			if chNode.key == resKey {
-				flag = true
+		for _, cNode := range list1 {
+			// println(cNode.key)
+			if flag {
 				break
 			}
-			nodeList = append(nodeList, chNode)
+			for _, chNode := range cNode.ch {
+				if chNode.key == resKey {
+					flag = true
+					break
+				}
+				list2 = append(list2, chNode)
+			}
 		}
+		if list2 == nil {
+			break
+		} else {
+			list1 = list2
+			list2 = nil
+		}
+
 	}
 	if flag {
 		println("BFS Found")
@@ -217,6 +230,7 @@ func pBFS_worker(inNodeChan chan *Node, outNodeChan chan *Node) {
 			//println("expand:", chNode.key)
 			outNodeChan <- chNode
 		}
+		// End signal
 		outNodeChan <- nil
 	}
 }
@@ -284,6 +298,7 @@ func pBFS(root *Node, resKey int) {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+	println(runtime.GOMAXPROCS(0))
 
 	root := Node{-1, nil, nil}
 	maxDepth := 12
