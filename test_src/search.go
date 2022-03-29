@@ -24,155 +24,69 @@ var found bool
 
 var terminated bool
 
-func worker(task_ch chan *Task, resChan chan *Node, finChan chan int, num int) {
-	// fmt.Printf("Worker %d starts\n", num)
+func worker(glTaskChan chan *Task, num int) {
+	var curTask *Task
 	for {
 		if found {
 			// Have found, exit
 			break
 		}
-		// Wait for task
-		task := <-task_ch
+		curTask = <-glTaskChan
 		// Check
-		if task.node == nil || task.depth <= 0 {
-			return
+		if curTask.node == nil || curTask.depth <= 0 {
+			continue
 		}
-		// println("Process:", node.key, "from worker", num)
-		if task.srhType == 1 { // BFS Task
-			for _, chNode := range task.node.ch {
-				if chNode.key == task.key {
+		if curTask.srhType == 1 { // BFS Task
+			for _, chNode := range curTask.node.ch {
+				if chNode.key == curTask.key {
 					// Found it, exit
 					found = true
-					finChan <- num
 					return
 				}
-				// Send new node
-				resChan <- chNode
+				// Send new task
+				glTaskChan <- &Task{chNode, 1, 1, curTask.key}
 			}
 		} // else if other searching type
 
-		// Finished one task
-		finChan <- num
+		// // Finished one task
+		// finChan <- num
 	}
-	// println("Worker ends", num)
 }
 
 func scheduler(root *Node, resKey int) {
-	maxRes := 10000
-	maxTask := 5
 	found = false
-
-	resChan := make(chan *Node, maxRes)
 
 	cpus := runtime.NumCPU()
 	runtime.GOMAXPROCS(cpus)
 
-	workerNum := 1
+	workerNum := cpus - 1
 
-	var taskChans [64]chan *Task
-	var taskCnt [64]int
-
-	for i := 0; i < workerNum; i++ {
-		taskCnt[i] = 0
-		taskChans[i] = make(chan *Task, maxTask+1)
-	}
-
-	finChan := make(chan int, workerNum*maxTask)
+	glTaskChan := make(chan *Task, 10000000)
 
 	for i := 0; i < workerNum; i++ {
-		go worker(taskChans[i], resChan, finChan, i)
+		go worker(glTaskChan, i)
 	}
-
-	var glTask []*Task
 
 	initTask := Task{root, 1, 1, resKey}
+	glTaskChan <- &initTask
 
-	// glTask = append(glTask, &initTask)
-	taskChans[0] <- &initTask
-	taskCnt[0] += 1
-
+	timeOut := 0
 	for {
 		if found {
-			println("P_BFS found")
+			println("P_BFS Found")
 			break
 		}
-		select {
-		case k := <-finChan:
-			// println("worker", k, "finish")
+		if timeOut >= 3 {
+			println("P_BFS Not Found")
+			break
+		}
+		<-time.After(time.Microsecond * 50)
 
-			// Worker k finished
-			taskCnt[k] -= 1
-			// println("worker", k, "taskCnt", taskCnt[k])
-
-			// Any task left?
-			if len(glTask) > 0 {
-				// Give one to worker k immediately
-				taskCnt[k] += 1
-				taskChans[k] <- glTask[0]
-				// println("Send to worker", k)
-				glTask = glTask[1:]
-			}
-		case res := <-resChan:
-			// Receive new node, gsenerate task
-			// TODO: More balancer and schedules here
-
-			newTask := Task{res, 1, 1, resKey}
-			// If there's an idle worker, give to it
-			flag := false
-			for i := 0; i < workerNum; i++ {
-				if taskCnt[i] < maxTask {
-					taskCnt[i] += 1
-					taskChans[i] <- &newTask
-					// println("Send to worker", i)
-					flag = true
-					break
-				}
-			}
-			// Otherwise, put it to global list
-			if !flag {
-				// println("No idle workers")
-				glTask = append(glTask, &newTask)
-			}
-
-		case <-time.After(time.Microsecond * 100):
-			// Check if no more workers running and results waited
-			if len(glTask) > 0 {
-				// Try send some tasks from global list
-				for i := 0; i < workerNum; i++ {
-					if len(glTask) == 0 {
-						break
-					}
-					for {
-						if taskCnt[i] >= maxTask {
-							break
-						}
-						taskCnt[i] += 1
-						taskChans[i] <- glTask[0]
-						glTask = glTask[1:]
-					}
-				}
-			} else {
-				// No tasks left
-				// All workers idle?
-				isFin := true
-				for i := 0; i < workerNum; i++ {
-					if taskCnt[i] > 0 {
-						isFin = false
-						break
-					}
-				}
-				if isFin {
-					// Yes, finished
-					if found {
-						println("P_BFS found")
-					} else {
-						println("P_BFS Not found")
-					}
-					return
-				}
-				// Some workers running, continue waiting
-			}
-
+		// Check if no more workers running and results waited
+		if len(glTaskChan) == 0 {
+			timeOut++
+		} else {
+			timeOut = 0
 		}
 	}
 
@@ -238,7 +152,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	root := Node{-1, nil, nil}
-	maxDepth := 20
+	maxDepth := 18
 	genCnt = 0
 	gen_tree(&root, maxDepth)
 
