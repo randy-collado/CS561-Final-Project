@@ -25,31 +25,42 @@ var found bool
 var terminated bool
 
 func worker(glTaskChan chan *Task, num int) {
-	var curTask *Task
+	var curTask *Task = nil
+	var nextTask *Task = nil
 	for {
 		if found {
 			// Have found, exit
 			break
 		}
-		curTask = <-glTaskChan
+		if curTask == nil {
+			curTask = <-glTaskChan
+		}
+
 		// Check
 		if curTask.node == nil || curTask.depth <= 0 {
 			continue
 		}
 		if curTask.srhType == 1 { // BFS Task
+			flag := false
 			for _, chNode := range curTask.node.ch {
 				if chNode.key == curTask.key {
 					// Found it, exit
 					found = true
 					return
 				}
-				// Send new task
-				glTaskChan <- &Task{chNode, 1, 1, curTask.key}
+				tmpTask := Task{chNode, 1, 1, curTask.key}
+				if !flag {
+					nextTask = &tmpTask
+					flag = true
+				} else {
+					// Send new task
+					glTaskChan <- &tmpTask
+				}
+
 			}
 		} // else if other searching type
-
-		// // Finished one task
-		// finChan <- num
+		curTask = nextTask
+		nextTask = nil
 	}
 }
 
@@ -102,11 +113,11 @@ func gen_tree(curNode *Node, curDepth int) {
 		tmpNode := Node{genCnt, nil, nil}
 		genCnt++
 		curNode.ch = append(curNode.ch, &tmpNode)
-		// gen_tree(&tmpNode, curDepth-1)
+		gen_tree(&tmpNode, curDepth-1)
 	}
-	for _, chNode := range curNode.ch {
-		gen_tree(chNode, curDepth-1)
-	}
+	// for _, chNode := range curNode.ch {
+	// 	gen_tree(chNode, curDepth-1)
+	// }
 }
 
 func serial_bfs(root *Node, resKey int) {
@@ -148,34 +159,66 @@ func serial_dfs(curNode *Node, resKey int) bool {
 	return false
 }
 
+func serial_dfs2(curNode *Node, resKey int, depthLeft int) bool {
+	if curNode.key == resKey {
+		return true
+	}
+
+	if depthLeft == 0 {
+		return false
+	}
+
+	for _, chNode := range curNode.ch {
+		if serial_dfs2(chNode, resKey, depthLeft-1) {
+			return true
+		}
+	}
+	return false
+}
+
+func serial_iddfs(root *Node, resKey int, maxDepth int) {
+	for i := 1; i <= maxDepth; i++ {
+		if serial_dfs2(root, resKey, maxDepth) {
+			println("IDDFS Found")
+			return
+		}
+	}
+	println("IDDFS Not Found")
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	root := Node{-1, nil, nil}
-	maxDepth := 18
+	maxDepth := 20
 	genCnt = 0
 	gen_tree(&root, maxDepth)
 
 	println(genCnt)
-	resKey := genCnt - 1
+	resKey := rand.Intn(genCnt)
 
 	startTime := time.Now()
-	serial_bfs(&root, resKey)
-	elapTime := time.Since(startTime) / time.Millisecond
-	println("Serial BFS: ", elapTime, "ms")
-
-	startTime = time.Now()
 	sdRes := serial_dfs(&root, resKey)
 	if sdRes {
 		println("DFS found")
 	} else {
 		println("DFS Not found")
 	}
-	elapTime = time.Since(startTime) / time.Millisecond
+	elapTime := time.Since(startTime) / time.Millisecond
 	println("Serial DFS: ", elapTime, "ms")
 
 	startTime = time.Now()
-	scheduler(&root, resKey)
+	serial_bfs(&root, resKey)
 	elapTime = time.Since(startTime) / time.Millisecond
-	println("Parallel BFS: ", elapTime, "ms")
+	println("Serial BFS: ", elapTime, "ms")
+
+	startTime = time.Now()
+	serial_iddfs(&root, resKey, maxDepth)
+	elapTime = time.Since(startTime) / time.Millisecond
+	println("Serial IDDFS: ", elapTime, "ms")
+
+	// startTime = time.Now()
+	// scheduler(&root, resKey)
+	// elapTime = time.Since(startTime) / time.Millisecond
+	// println("Parallel BFS: ", elapTime, "ms")
 }
