@@ -31,7 +31,9 @@ func worker(task_ch chan *Task, resChan chan *Node, finChan chan int, num int) {
 			// Have found, exit
 			break
 		}
+		// Wait for task
 		task := <-task_ch
+		// Check
 		if task.node == nil || task.depth <= 0 {
 			return
 		}
@@ -44,6 +46,7 @@ func worker(task_ch chan *Task, resChan chan *Node, finChan chan int, num int) {
 					finChan <- num
 					return
 				}
+				// Send new node
 				resChan <- chNode
 			}
 		} // else if other searching type
@@ -91,7 +94,7 @@ func scheduler(root *Node, resKey int) {
 
 	for {
 		if found {
-			println("found key", resKey)
+			println("P_BFS found")
 			break
 		}
 		select {
@@ -111,7 +114,7 @@ func scheduler(root *Node, resKey int) {
 				glTask = glTask[1:]
 			}
 		case res := <-resChan:
-			// Generate task
+			// Receive new node, gsenerate task
 			// TODO: More balancer and schedules here
 
 			newTask := Task{res, 1, 1, resKey}
@@ -133,21 +136,22 @@ func scheduler(root *Node, resKey int) {
 			}
 
 		case <-time.After(time.Microsecond * 1000):
-			// Check if no more idle signal and results waited
+			// Check if no more workers running and results waited
 			if len(glTask) == 0 { // No tasks left
 				// All workers idle?
 				isFin := true
 				for i := 0; i < workerNum; i++ {
 					if taskCnt[i] > 0 {
 						isFin = false
+						break
 					}
 				}
 				if isFin {
 					// Yes, finished
 					if found {
-						println("Found key", resKey)
+						println("P_BFS found")
 					} else {
-						println("Not found")
+						println("P_BFS Not found")
 					}
 					return
 				}
@@ -163,20 +167,75 @@ func gen_tree(curNode *Node, curDepth int) {
 	if curDepth <= 0 {
 		return
 	}
-	for i := 0; i < rand.Intn(4); i++ {
-		tmpNode := Node{rand.Intn(10), nil, nil}
+	for i := 0; i < rand.Intn(8); i++ {
+		tmpNode := Node{rand.Intn(1000), nil, nil}
 		curNode.ch = append(curNode.ch, &tmpNode)
 		gen_tree(&tmpNode, curDepth-1)
 	}
 }
 
+func serial_bfs(root *Node, resKey int) {
+	var nodeList []*Node
+	nodeList = append(nodeList, root)
+	flag := false
+	for {
+		if flag || len(nodeList) == 0 {
+			break
+		}
+		curNode := nodeList[0]
+		nodeList = nodeList[1:]
+		for _, chNode := range curNode.ch {
+			if chNode.key == resKey {
+				flag = true
+				break
+			}
+			nodeList = append(nodeList, chNode)
+		}
+	}
+	if flag {
+		println("BFS Found")
+	} else {
+		println("BFS Not Found")
+	}
+}
+
+func serial_dfs(curNode *Node, resKey int) bool {
+	if curNode.key == resKey {
+		return true
+	}
+
+	for _, chNode := range curNode.ch {
+		if serial_dfs(chNode, resKey) {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
-	resKey := 10
+	resKey := 10000
 
 	root := Node{-1, nil, nil}
-	maxDepth := 31
+	maxDepth := 20
 	gen_tree(&root, maxDepth)
 
-	scheduler(&root, resKey)
+	startTime := time.Now()
+	serial_bfs(&root, resKey)
+	elapTime := time.Since(startTime) / time.Millisecond
+	println("Serial BFS: ", elapTime, "ms")
 
+	startTime = time.Now()
+	sdRes := serial_dfs(&root, resKey)
+	if sdRes {
+		println("DFS found")
+	} else {
+		println("DFS Not found")
+	}
+	elapTime = time.Since(startTime) / time.Millisecond
+	println("Serial DFS: ", elapTime, "ms")
+
+	startTime = time.Now()
+	scheduler(&root, resKey)
+	elapTime = time.Since(startTime) / time.Millisecond
+	println("Parallel BFS: ", elapTime, "ms")
 }
