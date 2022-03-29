@@ -58,8 +58,7 @@ func worker(task_ch chan *Task, resChan chan *Node, finChan chan int, num int) {
 }
 
 func scheduler(root *Node, resKey int) {
-
-	maxRes := 100
+	maxRes := 10000
 	maxTask := 5
 	found = false
 
@@ -68,17 +67,17 @@ func scheduler(root *Node, resKey int) {
 	cpus := runtime.NumCPU()
 	runtime.GOMAXPROCS(cpus)
 
-	workerNum := cpus - 1
+	workerNum := 1
 
 	var taskChans [64]chan *Task
 	var taskCnt [64]int
 
 	for i := 0; i < workerNum; i++ {
 		taskCnt[i] = 0
-		taskChans[i] = make(chan *Task, maxTask)
+		taskChans[i] = make(chan *Task, maxTask+1)
 	}
 
-	finChan := make(chan int, workerNum)
+	finChan := make(chan int, workerNum*maxTask)
 
 	for i := 0; i < workerNum; i++ {
 		go worker(taskChans[i], resChan, finChan, i)
@@ -121,7 +120,7 @@ func scheduler(root *Node, resKey int) {
 			// If there's an idle worker, give to it
 			flag := false
 			for i := 0; i < workerNum; i++ {
-				if taskCnt[i] == 0 {
+				if taskCnt[i] < maxTask {
 					taskCnt[i] += 1
 					taskChans[i] <- &newTask
 					// println("Send to worker", i)
@@ -135,9 +134,25 @@ func scheduler(root *Node, resKey int) {
 				glTask = append(glTask, &newTask)
 			}
 
-		case <-time.After(time.Microsecond * 1000):
+		case <-time.After(time.Microsecond * 100):
 			// Check if no more workers running and results waited
-			if len(glTask) == 0 { // No tasks left
+			if len(glTask) > 0 {
+				// Try send some tasks from global list
+				for i := 0; i < workerNum; i++ {
+					if len(glTask) == 0 {
+						break
+					}
+					for {
+						if taskCnt[i] >= maxTask {
+							break
+						}
+						taskCnt[i] += 1
+						taskChans[i] <- glTask[0]
+						glTask = glTask[1:]
+					}
+				}
+			} else {
+				// No tasks left
 				// All workers idle?
 				isFin := true
 				for i := 0; i < workerNum; i++ {
@@ -163,14 +178,20 @@ func scheduler(root *Node, resKey int) {
 
 }
 
+var genCnt int
+
 func gen_tree(curNode *Node, curDepth int) {
 	if curDepth <= 0 {
 		return
 	}
 	for i := 0; i < rand.Intn(8); i++ {
-		tmpNode := Node{rand.Intn(1000), nil, nil}
+		tmpNode := Node{genCnt, nil, nil}
+		genCnt++
 		curNode.ch = append(curNode.ch, &tmpNode)
-		gen_tree(&tmpNode, curDepth-1)
+		// gen_tree(&tmpNode, curDepth-1)
+	}
+	for _, chNode := range curNode.ch {
+		gen_tree(chNode, curDepth-1)
 	}
 }
 
@@ -178,11 +199,12 @@ func serial_bfs(root *Node, resKey int) {
 	var nodeList []*Node
 	nodeList = append(nodeList, root)
 	flag := false
+	var curNode *Node
 	for {
 		if flag || len(nodeList) == 0 {
 			break
 		}
-		curNode := nodeList[0]
+		curNode = nodeList[0]
 		nodeList = nodeList[1:]
 		for _, chNode := range curNode.ch {
 			if chNode.key == resKey {
@@ -213,11 +235,15 @@ func serial_dfs(curNode *Node, resKey int) bool {
 }
 
 func main() {
-	resKey := 10000
+	rand.Seed(time.Now().UnixNano())
 
 	root := Node{-1, nil, nil}
 	maxDepth := 20
+	genCnt = 0
 	gen_tree(&root, maxDepth)
+
+	println(genCnt)
+	resKey := genCnt - 1
 
 	startTime := time.Now()
 	serial_bfs(&root, resKey)
