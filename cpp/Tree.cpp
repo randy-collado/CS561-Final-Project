@@ -63,9 +63,9 @@ class Tree{
             std::deque<Node*> queue = std::deque<Node*>();
             if (head == nullptr) return std::vector<int>();
             queue.push_back(head);
-            #pragma parallel
+            #pragma omp parallel
             {
-                #pragma omp for
+                #pragma omp for num_threads(4)
                 for (;;){
                     Node* currentNode = queue.front(); queue.pop_front();
                     if (currentNode == nullptr) return std::vector<int>();
