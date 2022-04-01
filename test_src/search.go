@@ -35,7 +35,7 @@ var nodePool = sync.Pool{
 
 var found bool
 
-func worker(glTaskChan chan *Task, num int) {
+func pDFS_worker(glTaskChan chan *Task, num int) {
 	var curTask *Task = nil
 	var nextTask *Task = nil
 	for {
@@ -51,7 +51,7 @@ func worker(glTaskChan chan *Task, num int) {
 		if curTask.node == nil || curTask.depth <= 0 {
 			continue
 		}
-		if curTask.srhType == 1 { // BFS Task
+		if curTask.srhType == 1 {
 			flag := false
 			for _, chNode := range curTask.node.ch {
 				if chNode.key == curTask.key {
@@ -83,7 +83,7 @@ func worker(glTaskChan chan *Task, num int) {
 	}
 }
 
-func scheduler(root *Node, resKey int) {
+func pDFS(root *Node, resKey int) {
 	found = false
 
 	cpus := runtime.NumCPU()
@@ -94,7 +94,7 @@ func scheduler(root *Node, resKey int) {
 	glTaskChan := make(chan *Task, 100000000)
 
 	for i := 0; i < workerNum; i++ {
-		go worker(glTaskChan, i)
+		go pDFS_worker(glTaskChan, i)
 	}
 	initTask := taskPool.Get().(*Task)
 	initTask.node = root
@@ -166,12 +166,8 @@ func serial_bfs(root *Node, resKey int) {
 				list2 = append(list2, chNode)
 			}
 		}
-		if list2 == nil {
-			break
-		} else {
-			list1 = list2
-			list2 = nil
-		}
+		list1 = list2
+		list2 = nil
 
 	}
 	if flag {
@@ -213,7 +209,7 @@ func serial_dfs2(curNode *Node, resKey int, depthLeft int) bool {
 
 func serial_iddfs(root *Node, resKey int, maxDepth int) {
 	for i := 1; i <= maxDepth; i++ {
-		if serial_dfs2(root, resKey, maxDepth) {
+		if serial_dfs2(root, resKey, i) {
 			println("IDDFS Found")
 			return
 		}
@@ -301,7 +297,7 @@ func main() {
 	println(runtime.GOMAXPROCS(0))
 
 	root := Node{-1, nil, nil}
-	maxDepth := 12
+	maxDepth := 14
 	maxBreadth := 8
 	genCnt = 0
 	gen_tree(&root, maxDepth, maxBreadth)
