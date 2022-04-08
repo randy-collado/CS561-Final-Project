@@ -8,11 +8,9 @@
 #include <thread>
 #include <vector>
 
-#include "nodes.h"
+#include "writeTree.h"
 
 using namespace std;
-
-
 
 bool dfs(Node *curNode, int key) {
   // std::cout << curNode->key << std::endl;
@@ -66,9 +64,10 @@ int main() {
   Node *root = new Node();
   // root->chs = nullptr;
   root->key = -1;
-  gen_tree(root, 12);
-  cout << "Node count: " << cntNode << endl;
-  cout << dfs(root, cntNode) << endl;
-  p_dfs(root, cntNode);
+  gen_tree(root, 4);
+  writeTreeToFile("test", root);
+  // cout << "Node count: " << cntNode << endl;
+  // cout << dfs(root, cntNode) << endl;
+  // p_dfs(root, cntNode);
   return 0;
 }

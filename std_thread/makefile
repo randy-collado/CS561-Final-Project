@@ -1,4 +1,8 @@
 CC = g++
+CFLAGS = -std=c++17 -Wall
+OBJ = writeTree.o
 
-main.exe: main.cpp nodes.h
-	$(CC) main.cpp -std=c++17 -O2 -o main.exe
+main: $(OBJ)
+	$(CC) main.cpp $(CFLAGS) $(OBJ) -o main.exe
+
+writeTree.o: writeTree.cpp
