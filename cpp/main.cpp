@@ -1,4 +1,4 @@
-#include "Tree.cpp"
+#include "Tree.hpp"
 #include <chrono>
 #include <iostream>
 #include <vector>

@@ -4,6 +4,8 @@
 #include <cassert>
 #include <iostream>
 
+#pragma once
+
 struct Node
 {
     Node(size_t branchingFactor){

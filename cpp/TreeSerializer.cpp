@@ -1,4 +1,6 @@
-#include "Tree.cpp"
+#define _GNU_SOURCE
+
+#include "Tree.hpp"
 #include "TreeSerializer.hpp"
 #include <unistd.h>
 #include <fcntl.h>
@@ -9,10 +11,10 @@
 	 * NOTE: The size of a page on this device is 4096 bytes
 	 */	
 	TreeSerializer::TreeSerializer(std::string filename, MODE mode){
-			int flags = O_DIRECT;
+			int flags = O_DIRECT | O_SYNC;
 			switch(mode){
 				case MODE::READ: //READ
-					flags |= O_READ;
+					flags |= O_RDONLY;
 					mode_internal = mode;
 					break;
 				case MODE::WRITE: //WRITE

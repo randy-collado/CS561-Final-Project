@@ -1,7 +1,9 @@
-#include "Tree.cpp"
+#include "Tree.hpp"
 #include <iostream>
 #include <vector>
 #include "omp.h"
+
+#pragma once
 
 enum MODE {READ, WRITE};
 
