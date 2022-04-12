@@ -1,15 +1,15 @@
 #include <vector>
 #include <deque>
 #include <random>
+#include <cassert>
 #include <iostream>
 
 struct Node
 {
     Node(size_t branchingFactor){
         maxChildren = branchingFactor;
-        children = std::vector<Node*>();
         key = -1;
-        values = std::vector<int>();
+	children.reserve(branchingFactor);
     }
     size_t maxChildren;
     int key;
