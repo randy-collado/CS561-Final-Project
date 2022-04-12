@@ -19,6 +19,8 @@ struct Node
     std::vector<Node*> children;
 };
 
+struct dummy_node { int x, int y, int z };
+
 class Tree{
     public:
         Tree(size_t branchingFactor){

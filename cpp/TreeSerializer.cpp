@@ -46,9 +46,10 @@
 int main(int argc, char** argv){
 	TreeSerializer TS("test", MODE::WRITE);
 	Node* node = new Node(8);
+    dummy_node d_node = dummy_node{.x = 1, .y = 2, .z = 3};
 	node->key = 12;
-	TS.writeNode(node);
-	Node* second_node = TS.readNode();
-	std::cout << second_node->key;	
+	TS.writeNode(&d_node);
+	dummy_node* second_node = TS.readNode();
+	std::cout << second_node->x;
 	return 0;
 }
