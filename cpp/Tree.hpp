@@ -3,6 +3,7 @@
 #include <random>
 #include <cassert>
 #include <iostream>
+#include <stdlib.h>
 #include <cstring>
 #include "TreeSerializer.hpp"
 
@@ -101,6 +102,10 @@ class Tree{
 		dump_tree_impl(this->head);
 	}
 
+    void dump_tree_tiered(){
+            dump_tree_tiered_impl(this->head);
+    }
+
 	const Node* get_head_ref(){
 		return head;
 	}
@@ -153,6 +158,33 @@ class Tree{
 		}	
 
 	}
+
+    void dump_tree_tiered_impl(Node* head){
+        if (!ts_init){
+            std::cerr << "[ERROR] Serializer was not initialized" << std::endl;
+            exit(1);
+        }
+        if (!head) return;
+        auto s_node_ptr = node_to_snode(head);
+        TS.writeNode(s_node_ptr);
+        delete s_node_ptr;
+        for (size_t i=0; i < head->numChildren; ++i){
+            dump_tree_impl(head->children[i]);
+        }
+    }
+
+    S_Node* node_to_aligned_snode(Node* node){
+        S_Node* s_node = (S_Node*)aligned_alloc(512, sizeof(S_Node));
+        s_node->id = node->key;
+
+        std::memcpy(s_node->payloads, node->values, node->numValues);
+
+        for (size_t i = 0; i < node->numChildren; ++i){
+            s_node->children[i] = node->children[i]->key;
+        }
+        return s_node;
+        return nullptr;
+    }
         Node* head;
         size_t numElements;
         size_t branch;

@@ -13,14 +13,14 @@
 	/*
 	 * NOTE: The size of a page on this device is 4096 bytes
 	 */	
-	TreeSerializer::TreeSerializer() : at_eof(false), fd(-1), mode_internal(MODE::INVALID), read_offset(0), offset(0) {}
+	TreeSerializer::TreeSerializer() : at_eof(false), fd(-1), mode_internal(MODE::INVALID), read_offset(sizeof(tier_offsets)), offset(0) {}
 
 	TreeSerializer::~TreeSerializer(){
 		close(fd);
 	}
 
 	void TreeSerializer::openFile(std::string filepath, MODE mode){
-	int flags = O_DIRECT | O_SYNC;
+	int flags = 0;
 			switch(mode){
 				case MODE::READ: //READ
 					flags |= O_RDONLY;

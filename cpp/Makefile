@@ -10,3 +10,8 @@ del:
 clear:
 	rm main
 	rm -rf *.dSYM
+
+test:
+	g++ -std=c++11 test.cpp -o test
+del_test:
+	rm test

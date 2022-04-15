@@ -1,19 +1,22 @@
-#include <iostream>
-#include <vector>
-#include "omp.h"
+#include <string>
 
 #pragma once
 
 enum MODE {READ, WRITE, INVALID};
 
-
 struct dummy_node { int x; int y; int z; };
+
+struct tier_offsets {
+    int tiers;
+    int offsets[511];
+};
+
 struct S_Node {
 	int id;
 	int payloads[8];
 	int children[8]; //id or keys of the nodes
-
 } __attribute__ ((aligned(512))); //GCC extension to align a struct
+
 class TreeSerializer{
 	public:
 		TreeSerializer();
