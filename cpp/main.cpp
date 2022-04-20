@@ -14,8 +14,10 @@ int main(int argc, char** argv){
 	tree.fill(20, 20, keys, values);
 	tree.BFS(keys[0]);
 	tree.init_serializer(argv[1]);
-	tree.dump_tree();
-	auto maybe_head_ptr = tree.digestNode();
-	std::cout << (maybe_head_ptr->id == tree.get_head_ref()->key) << std::endl;
+	tree.dump_tree_tiered();
+	auto maybe_metadata = tree.digest_metadata();
+    for (size_t i = 0; i < maybe_metadata.tiers; ++i){
+        std::cout << maybe_metadata.offsets[i] << std::endl;
+    }
 	return 0;
 }

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#define S_NODE_SIZE 512
+
 enum MODE {READ, WRITE, INVALID};
 
 struct dummy_node { int x; int y; int z; };
@@ -24,6 +26,10 @@ class TreeSerializer{
 		void writeNode(S_Node* node);
 		void openFile(std::string filepath, MODE mode);
 		S_Node* readNode();
+        S_Node* readNodeFromOffset(size_t offset);
+        size_t get_current_offset();
+        void write_offset_metadata(tier_offsets* metadata);
+        tier_offsets* read_offset_metadata();
 	private:
 		int fd;
 		MODE mode_internal;
