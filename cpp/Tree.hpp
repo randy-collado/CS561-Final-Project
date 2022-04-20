@@ -1,4 +1,4 @@
-#include "TreeSerializer.hpp"
+// #include "TreeSerializer.hpp"
 #include <cassert>
 #include <cstring>
 #include <deque>
@@ -29,22 +29,22 @@ public:
   ~Tree() {}
 
   void init_serializer(std::string filename);
-  S_Node *node_to_snode(Node *node);
+  // S_Node *node_to_snode(Node *node);
   void fill(long numInserts, long upperBound, std::vector<int> &keys,
             std::vector<int> &values);
   void add(int key, int value);
-  void dump_tree();
+  // void dump_tree();
 
-  const Node *get_head_ref() { return head; }
+  Node *get_head_ref() { return head; }
 
-  S_Node *digestNode() { return TS.readNode(); }
+  // S_Node *digestNode() { return TS.readNode(); }
 
 private:
   void add_impl(int key, int value);
-  void dump_tree_impl(Node *head);
+  // void dump_tree_impl(Node *head);
   Node *head;
   size_t numElements;
   size_t branch;
-  TreeSerializer TS;
+  // TreeSerializer TS;
   bool ts_init;
 };
