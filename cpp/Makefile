@@ -1,15 +1,22 @@
-CC = clang++
-CFLAGS = -g -msse2 -msse3 -std=c++17
+CC = g++
+CFLAGS = -Wall -std=c++17
+OBJS = main.o algorithm.o tree.o # treefile.o
 
-treefile: TreeSerializer.cpp main.cpp
-	$(CC) $(CFLAGS) TreeSerializer.cpp main.cpp -o treefile
+build: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o main.exe
 
-build: main.cpp
-	$(CC) $(CFLAGS) -std=c++17 main.cpp -o main
+main.o: main.cpp
+	$(CC) $(CFLAGS) -c main.cpp
 
-del:
-	rm treefile
+# treefile.o: TreeSerializer.cpp
+# 	$(CC) $(CFLAGS) -c TreeSerializer.cpp
 
-clear:
-	rm main
-	rm -rf *.dSYM
+algorithm.o: algorithm.cpp
+	$(CC) $(CFLAGS) -c algorithm.cpp
+
+tree.o: tree.cpp
+	$(CC) $(CFLAGS) -c tree.cpp
+
+clean:
+	del *.o
+	del *.exe
