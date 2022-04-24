@@ -38,7 +38,7 @@ bool s_iddfs_worker(Node *curNode, int key, size_t depLeft) {
 }
 
 bool s_iddfs(Node *root, int key, size_t maxDepth) {
-  printf("Max Depth: %lld\n", maxDepth);
+  // printf("Max Depth: %lld\n", maxDepth);
   size_t dep = 1;
   while (dep <= maxDepth) {
     if (s_iddfs_worker(root, key, dep))

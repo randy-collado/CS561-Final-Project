@@ -25,9 +25,12 @@ int main(int argc, char **argv) {
   // }
 
   Node *root = tree.get_head_ref();
-  srand(time(0));
-  int targetKey = rand() % num_elements;
+  
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distrib(0, num_elements);
 
+  int targetKey = distrib(gen);
   printf("Target Key: %d\n", targetKey);
 
   auto begin = std::chrono::high_resolution_clock::now();
