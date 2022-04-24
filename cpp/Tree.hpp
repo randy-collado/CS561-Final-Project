@@ -1,11 +1,12 @@
-#include <vector>
-#include <deque>
-#include <random>
+// #include "TreeSerializer.hpp"
 #include <cassert>
 #include <iostream>
 #include <stdlib.h>
 #include <cstring>
-#include "TreeSerializer.hpp"
+#include <deque>
+#include <iostream>
+#include <random>
+#include <vector>
 
 #pragma once
 
@@ -22,14 +23,20 @@ struct Node
     Node* children[8];
 };
 
-class Tree{
-    public:
-        Tree(size_t branchingFactor) : branch(branchingFactor), head(nullptr), ts_init(false) {}
+class Tree {
+public:
+  Tree(size_t branchingFactor)
+      : branch(branchingFactor), head(nullptr), ts_init(false) {}
 
-        ~Tree(){
+  ~Tree() {}
 
-        }
-
+  void init_serializer(std::string filename);
+  // S_Node *node_to_snode(Node *node);
+  void fill(long numInserts, long upperBound, std::vector<int> &keys,
+            std::vector<int> &values);
+  void add(int key, int value);
+  // void dump_tree();
+  
 	void init_serializer(std::string filename){
 		TS.openFile(filename, MODE::WRITE);
 		ts_init = true;
@@ -212,4 +219,3 @@ class Tree{
 	    TreeSerializer TS;
 	    bool ts_init;
 };
-

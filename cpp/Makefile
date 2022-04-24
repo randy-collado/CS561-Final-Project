@@ -1,17 +1,22 @@
-treefile:
-	g++ -g -msse2 -msse3 -std=c++17 TreeSerializer.cpp main.cpp -o treefile
+CC = g++
+CFLAGS = -Wall -O3 -std=c++17
+OBJS = main.o algorithm.o tree.o # treefile.o
 
-build: 
-	g++ -g -msse2 -msse3 -std=c++17 main.cpp -o main
+build: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -fopenmp -o main.exe
 
-del:
-	rm treefile
+main.o: main.cpp
+	$(CC) $(CFLAGS) -c -fopenmp main.cpp
 
-clear:
-	rm main
-	rm -rf *.dSYM
+# treefile.o: TreeSerializer.cpp
+# 	$(CC) $(CFLAGS) -c TreeSerializer.cpp
 
-test:
-	g++ -std=c++11 test.cpp -o test
-del_test:
-	rm test
+algorithm.o: algorithm.cpp
+	$(CC) $(CFLAGS) -c -fopenmp algorithm.cpp
+
+tree.o: tree.cpp
+	$(CC) $(CFLAGS) -c tree.cpp
+
+clean:
+	del *.o
+	del *.exe
