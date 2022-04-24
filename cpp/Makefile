@@ -1,18 +1,18 @@
 CC = g++
-CFLAGS = -Wall -std=c++17
+CFLAGS = -Wall -O3 -std=c++17
 OBJS = main.o algorithm.o tree.o # treefile.o
 
 build: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o main.exe
+	$(CC) $(CFLAGS) $(OBJS) -fopenmp -o main.exe
 
 main.o: main.cpp
-	$(CC) $(CFLAGS) -c main.cpp
+	$(CC) $(CFLAGS) -c -fopenmp main.cpp
 
 # treefile.o: TreeSerializer.cpp
 # 	$(CC) $(CFLAGS) -c TreeSerializer.cpp
 
 algorithm.o: algorithm.cpp
-	$(CC) $(CFLAGS) -c algorithm.cpp
+	$(CC) $(CFLAGS) -c -fopenmp algorithm.cpp
 
 tree.o: tree.cpp
 	$(CC) $(CFLAGS) -c tree.cpp
