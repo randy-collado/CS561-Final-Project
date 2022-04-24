@@ -2,7 +2,7 @@
 
 void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
   while (1) {
-    std::cout << curNode << " " << curNode->key << std::endl;
+    // std::cout << curNode << " " << curNode->key << std::endl;
     if (*isFound)
       return;
     if (curNode->key == key) {
@@ -19,8 +19,33 @@ void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
   }
 }
 
+bool s_bfs(Node *root, int key) {
+  std::queue<Node *> nodeQ;
+  nodeQ.push(root);
+  while (!nodeQ.empty()) {
+    Node *curNode = nodeQ.front();
+    nodeQ.pop();
+    if (curNode->key == key)
+      return true;
+    for (int i = 0; i < curNode->numChildren; i++) {
+      nodeQ.push(curNode->children[i]);
+    }
+  }
+  return false;
+}
+
+bool s_dfs(Node *curNode, int key) {
+  if (curNode->key == key)
+    return true;
+  for (int i = 0; i < curNode->numChildren; i++) {
+    if (s_dfs(curNode->children[i], key))
+      return true;
+  }
+  return false;
+}
+
 void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
-  std::cout << curNode << " " << curNode->key << std::endl;
+  // std::cout << curNode << " " << curNode->key << std::endl;
   if (*isFound)
     return;
   if (curNode->key == key) {
@@ -31,6 +56,7 @@ void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
     (*nodeQ).push(curNode->children[i]);
   }
 }
+
 void p_sche(Node *root, int type, int key) {
   bool isFound = false;
   std::queue<Node *> nodeQ;
