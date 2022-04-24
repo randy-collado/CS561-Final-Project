@@ -37,9 +37,9 @@ bool s_iddfs_worker(Node *curNode, int key, int depLeft) {
   return false;
 }
 
-bool s_iddfs(Node *root, int key) {
+bool s_iddfs(Node *root, int key, int maxDepth) {
   int dep = 1;
-  while (1) {
+  while (dep <= maxDepth) {
     if (s_iddfs_worker(root, key, dep))
       return true;
     dep++;
@@ -118,7 +118,6 @@ bool p_bfs_omp(Node *root, int key) {
           continue;
         std::vector<Node *> next_private(tmp->children,
                                          tmp->children + tmp->numChildren);
-
 #pragma omp critical
         next.insert(next.end(), next_private.begin(), next_private.end());
       }

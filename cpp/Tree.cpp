@@ -46,7 +46,7 @@ void Tree::add_impl(int key, int value) {
     return;
   }
   queue.push_back(head);
-
+  maxLevel = 0;
   while (!queue.empty()) {
     Node *currentNode = queue.front();
     queue.pop_front();
@@ -61,6 +61,8 @@ void Tree::add_impl(int key, int value) {
       node->key = key;
       node->values[node->numValues++] = value;
       node->level = currentNode->level + 1;
+      if (node->level > maxLevel)
+        maxLevel = node->level;
       currentNode->children[currentNode->numChildren++] = node;
       return;
     } else {

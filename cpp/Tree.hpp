@@ -44,6 +44,8 @@ public:
 
   tier_offsets digest_metadata() { return *TS.read_offset_metadata(); }
 
+  int get_max_level() { return maxLevel; }
+
 private:
   void add_impl(int key, int value);
 
@@ -55,6 +57,7 @@ private:
   Node *head;
   size_t numElements;
   size_t branch;
+  size_t maxLevel;
   TreeSerializer TS;
   bool ts_init;
 };
