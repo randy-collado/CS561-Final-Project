@@ -8,8 +8,8 @@ build: $(OBJS)
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c -fopenmp main.cpp
 
-# treefile.o: TreeSerializer.cpp
-# 	$(CC) $(CFLAGS) -c TreeSerializer.cpp
+treefile.o: TreeSerializer.cpp
+	$(CC) $(CFLAGS) -c TreeSerializer.cpp
 
 algorithm.o: algorithm.cpp
 	$(CC) $(CFLAGS) -c -fopenmp algorithm.cpp
