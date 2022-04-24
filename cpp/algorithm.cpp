@@ -47,56 +47,56 @@ bool s_iddfs(Node *root, int key, int maxDepth) {
   return false;
 }
 
-void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
-  while (1) {
-    // std::cout << curNode << " " << curNode->key << std::endl;
-    if (*isFound)
-      return;
-    if (curNode->key == key) {
-      *isFound = true;
-      return;
-    }
-    for (int i = 1; i < curNode->numChildren; i++) {
-      (*nodeQ).push(curNode->children[i]);
-    }
-    if (curNode->numChildren >= 1) {
-      curNode = curNode->children[0];
-    } else
-      break;
-  }
-}
+// void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
+//   while (1) {
+//     // std::cout << curNode << " " << curNode->key << std::endl;
+//     if (*isFound)
+//       return;
+//     if (curNode->key == key) {
+//       *isFound = true;
+//       return;
+//     }
+//     for (int i = 1; i < curNode->numChildren; i++) {
+//       (*nodeQ).push(curNode->children[i]);
+//     }
+//     if (curNode->numChildren >= 1) {
+//       curNode = curNode->children[0];
+//     } else
+//       break;
+//   }
+// }
 
-void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
-  // std::cout << curNode << " " << curNode->key << std::endl;
-  if (*isFound)
-    return;
-  if (curNode->key == key) {
-    *isFound = true;
-    return;
-  }
-  for (int i = 0; i < curNode->numChildren; i++) {
-    (*nodeQ).push(curNode->children[i]);
-  }
-}
+// void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
+//   // std::cout << curNode << " " << curNode->key << std::endl;
+//   if (*isFound)
+//     return;
+//   if (curNode->key == key) {
+//     *isFound = true;
+//     return;
+//   }
+//   for (int i = 0; i < curNode->numChildren; i++) {
+//     (*nodeQ).push(curNode->children[i]);
+//   }
+// }
 
-void p_sche(Node *root, int type, int key) {
-  bool isFound = false;
-  std::queue<Node *> nodeQ;
-  nodeQ.push(root);
-  while (1) {
-    if (isFound)
-      break;
-    if (!nodeQ.empty()) {
-      Node *t = nodeQ.front();
-      nodeQ.pop();
-      if (type == 0) {
-        std::async(p_bfs, t, key, &isFound, &nodeQ);
-      } else if (type == 1) {
-        std::async(p_dfs, t, key, &isFound, &nodeQ);
-      }
-    }
-  }
-}
+// void p_sche(Node *root, int type, int key) {
+//   bool isFound = false;
+//   std::queue<Node *> nodeQ;
+//   nodeQ.push(root);
+//   while (1) {
+//     if (isFound)
+//       break;
+//     if (!nodeQ.empty()) {
+//       Node *t = nodeQ.front();
+//       nodeQ.pop();
+//       if (type == 0) {
+//         std::async(p_bfs, t, key, &isFound, &nodeQ);
+//       } else if (type == 1) {
+//         std::async(p_dfs, t, key, &isFound, &nodeQ);
+//       }
+//     }
+//   }
+// }
 
 bool p_bfs_omp(Node *root, int key) {
   std::vector<Node *> frontier;
@@ -128,19 +128,6 @@ bool p_bfs_omp(Node *root, int key) {
   }
 
   return isFound;
-
-  //   while (!nodeQ.empty()) {
-  //     Node *curNode = nodeQ.front();
-  //     nodeQ.pop();
-  //     if (curNode->key == key)
-  //       return true;
-
-  // #pragma omp parallel for
-  //     for (int i = 0; i < curNode->numChildren; i++) {
-  //       nodeQ.push(curNode->children[i]);
-  //     }
-  //   }
-  //   return false;
 }
 
 bool p_dfs_omp(Node *curNode, int key) {
@@ -151,7 +138,6 @@ bool p_dfs_omp(Node *curNode, int key) {
 
 #pragma omp parallel for
   for (int i = 0; i < curNode->numChildren; i++) {
-    // std::cout << omp_get_thread_num() << std::endl;
     if (!isFound && p_dfs_omp(curNode->children[i], key))
       isFound = true;
   }

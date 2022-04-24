@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -O3 -std=c++17
-OBJS = main.o algorithm.o tree.o # treefile.o
+OBJS = main.o algorithm.o tree.o treefile.o
 
 build: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -fopenmp -o main.exe
