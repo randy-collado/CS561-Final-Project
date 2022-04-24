@@ -99,22 +99,49 @@ void p_sche(Node *root, int type, int key) {
 }
 
 bool p_bfs_omp(Node *root, int key) {
-  std::queue<Node *> nodeQ;
-  nodeQ.push(root);
-  std::cout << omp_get_max_threads() << std::endl;
-  while (!nodeQ.empty()) {
-    Node *curNode = nodeQ.front();
-    nodeQ.pop();
-    if (curNode->key == key)
-      return true;
+  std::vector<Node *> frontier;
+  std::vector<Node *> next;
 
-#pragma omp parallel for
+  frontier.push_back(root);
 
-    for (int i = 0; i < curNode->numChildren; i++) {
-      nodeQ.push(curNode->children[i]);
+  bool isFound = false;
+
+  while (!isFound && frontier.size() > 0) {
+#pragma omp parallel
+    {
+#pragma omp for nowait
+      for (int i = 0; i < frontier.size(); i++) {
+        Node *tmp = frontier[i]; // TODO: read node
+        if (tmp->key == key)
+          isFound = true;
+        if (isFound)
+          continue;
+        std::vector<Node *> next_private(tmp->children,
+                                         tmp->children + tmp->numChildren);
+
+#pragma omp critical
+        next.insert(next.end(), next_private.begin(), next_private.end());
+      }
     }
+    frontier = next;
+    // next = std::vector<Node *>();
+    next.clear();
   }
-  return false;
+
+  return isFound;
+
+  //   while (!nodeQ.empty()) {
+  //     Node *curNode = nodeQ.front();
+  //     nodeQ.pop();
+  //     if (curNode->key == key)
+  //       return true;
+
+  // #pragma omp parallel for
+  //     for (int i = 0; i < curNode->numChildren; i++) {
+  //       nodeQ.push(curNode->children[i]);
+  //     }
+  //   }
+  //   return false;
 }
 
 bool p_dfs_omp(Node *curNode, int key) {
