@@ -6,18 +6,21 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #pragma once
 
 struct Node {
   Node(size_t branchingFactor)
       : maxChildren(branchingFactor), numChildren(0),
-        maxValues(branchingFactor), numValues(0), key(-1), level(-1) {}
+        maxValues(branchingFactor), numValues(0), level(0), key(-1) {}
   size_t maxChildren;
   size_t numChildren;
   size_t maxValues;
   size_t numValues;
-  ssize_t level;
+  size_t level;
   int key;
   int values[8];
   Node *children[8];
@@ -26,7 +29,7 @@ struct Node {
 class Tree {
 public:
   Tree(size_t branchingFactor)
-      : branch(branchingFactor), head(nullptr), ts_init(false) {}
+      : head(nullptr), branch(branchingFactor), maxLevel(0), ts_init(false) {}
 
   ~Tree() {}
 
@@ -44,7 +47,7 @@ public:
 
   tier_offsets digest_metadata() { return *TS.read_offset_metadata(); }
 
-  int get_max_level() { return maxLevel; }
+  size_t get_max_level() { return maxLevel; }
 
 private:
   void add_impl(int key, int value);

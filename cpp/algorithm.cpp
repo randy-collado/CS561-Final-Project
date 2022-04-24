@@ -8,7 +8,7 @@ bool s_bfs(Node *root, int key) {
     nodeQ.pop();
     if (curNode->key == key)
       return true;
-    for (int i = 0; i < curNode->numChildren; i++) {
+    for (size_t i = 0; i < curNode->numChildren; i++) {
       nodeQ.push(curNode->children[i]);
     }
   }
@@ -18,27 +18,28 @@ bool s_bfs(Node *root, int key) {
 bool s_dfs(Node *curNode, int key) {
   if (curNode->key == key)
     return true;
-  for (int i = 0; i < curNode->numChildren; i++) {
+  for (size_t i = 0; i < curNode->numChildren; i++) {
     if (s_dfs(curNode->children[i], key))
       return true;
   }
   return false;
 }
 
-bool s_iddfs_worker(Node *curNode, int key, int depLeft) {
+bool s_iddfs_worker(Node *curNode, int key, size_t depLeft) {
   if (curNode->key == key)
     return true;
   if (depLeft == 0)
     return false;
-  for (int i = 0; i < curNode->numChildren; i++) {
+  for (size_t i = 0; i < curNode->numChildren; i++) {
     if (s_iddfs_worker(curNode->children[i], key, depLeft - 1))
       return true;
   }
   return false;
 }
 
-bool s_iddfs(Node *root, int key, int maxDepth) {
-  int dep = 1;
+bool s_iddfs(Node *root, int key, size_t maxDepth) {
+  printf("Max Depth: %lld\n", maxDepth);
+  size_t dep = 1;
   while (dep <= maxDepth) {
     if (s_iddfs_worker(root, key, dep))
       return true;
@@ -47,7 +48,8 @@ bool s_iddfs(Node *root, int key, int maxDepth) {
   return false;
 }
 
-// void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
+// void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ)
+// {
 //   while (1) {
 //     // std::cout << curNode << " " << curNode->key << std::endl;
 //     if (*isFound)
@@ -56,7 +58,7 @@ bool s_iddfs(Node *root, int key, int maxDepth) {
 //       *isFound = true;
 //       return;
 //     }
-//     for (int i = 1; i < curNode->numChildren; i++) {
+//     for (size_t i = 1; i < curNode->numChildren; i++) {
 //       (*nodeQ).push(curNode->children[i]);
 //     }
 //     if (curNode->numChildren >= 1) {
@@ -66,7 +68,9 @@ bool s_iddfs(Node *root, int key, int maxDepth) {
 //   }
 // }
 
-// void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ) {
+// void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *>
+// *nodeQ)
+// {
 //   // std::cout << curNode << " " << curNode->key << std::endl;
 //   if (*isFound)
 //     return;
@@ -74,7 +78,7 @@ bool s_iddfs(Node *root, int key, int maxDepth) {
 //     *isFound = true;
 //     return;
 //   }
-//   for (int i = 0; i < curNode->numChildren; i++) {
+//   for (size_t i = 0; i < curNode->numChildren; i++) {
 //     (*nodeQ).push(curNode->children[i]);
 //   }
 // }
@@ -110,7 +114,7 @@ bool p_bfs_omp(Node *root, int key) {
 #pragma omp parallel
     {
 #pragma omp for nowait
-      for (int i = 0; i < frontier.size(); i++) {
+      for (size_t i = 0; i < frontier.size(); i++) {
         Node *tmp = frontier[i]; // TODO: read node
         if (tmp->key == key)
           isFound = true;
@@ -137,7 +141,7 @@ bool p_dfs_omp(Node *curNode, int key) {
   bool isFound = false;
 
 #pragma omp parallel for
-  for (int i = 0; i < curNode->numChildren; i++) {
+  for (size_t i = 0; i < curNode->numChildren; i++) {
     if (!isFound && p_dfs_omp(curNode->children[i], key))
       isFound = true;
   }

@@ -1,4 +1,10 @@
+#include <cstdlib>
+#include <fcntl.h>
 #include <string>
+#include <unistd.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #pragma once
 
@@ -36,6 +42,9 @@ public:
   tier_offsets *read_offset_metadata();
 
 private:
+#ifdef _WIN32
+  HANDLE hf;
+#endif
   int fd;
   MODE mode_internal;
   size_t offset;

@@ -46,7 +46,6 @@ void Tree::add_impl(int key, int value) {
     return;
   }
   queue.push_back(head);
-  maxLevel = 0;
   while (!queue.empty()) {
     Node *currentNode = queue.front();
     queue.pop_front();
@@ -61,8 +60,9 @@ void Tree::add_impl(int key, int value) {
       node->key = key;
       node->values[node->numValues++] = value;
       node->level = currentNode->level + 1;
-      if (node->level > maxLevel)
+      if (node->level > maxLevel){
         maxLevel = node->level;
+      }
       currentNode->children[currentNode->numChildren++] = node;
       return;
     } else {
@@ -101,7 +101,7 @@ void Tree::dump_tree_tiered_impl(Node *head) {
 
   std::deque<Node *> queue = std::deque<Node *>();
   queue.push_back(head);
-  ssize_t currentLevel = head->level;
+  size_t currentLevel = head->level;
   while (!queue.empty()) {
     Node *currentNode = queue.front();
     queue.pop_front();
@@ -121,10 +121,10 @@ void Tree::dump_tree_tiered_impl(Node *head) {
 }
 
 S_Node *Tree::node_to_aligned_snode(Node *node) {
-#ifdef __linux__
-  S_Node *s_node = (S_Node *)aligned_alloc(512, sizeof(S_Node));
+#ifdef _WIN32
+  S_Node *s_node = (S_Node *)_aligned_malloc(512, sizeof(S_Node));
 #else
-  S_Node *s_node = new S_Node;
+  S_Node *s_node = (S_Node *)aligned_alloc(512, sizeof(S_Node));
 #endif
 
   s_node->id = node->key;

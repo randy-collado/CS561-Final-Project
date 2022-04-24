@@ -8,13 +8,13 @@ build: $(OBJS)
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c -fopenmp main.cpp
 
-TreeSerializer.o: TreeSerializer.cpp
+TreeSerializer.o: TreeSerializer.cpp TreeSerializer.hpp
 	$(CC) $(CFLAGS) -c TreeSerializer.cpp
 
-algorithm.o: algorithm.cpp
+algorithm.o: algorithm.cpp algorithm.hpp
 	$(CC) $(CFLAGS) -c -fopenmp algorithm.cpp
 
-tree.o: tree.cpp
+tree.o: tree.cpp tree.hpp
 	$(CC) $(CFLAGS) -c tree.cpp
 
 clean:

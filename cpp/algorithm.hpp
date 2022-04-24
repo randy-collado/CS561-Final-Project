@@ -11,8 +11,8 @@
 // void p_sche(Node *root, int type, int key);
 bool s_bfs(Node *root, int key);
 bool s_dfs(Node *curNode, int key);
-bool s_iddfs_worker(Node *curNode, int key, int depLeft);
-bool s_iddfs(Node *root, int key, int maxDepth);
+bool s_iddfs_worker(Node *curNode, int key, size_t depLeft);
+bool s_iddfs(Node *root, int key, size_t maxDepth);
 
 bool p_bfs_omp(Node *root, int key);
 bool p_dfs_omp(Node *curNode, int key);
