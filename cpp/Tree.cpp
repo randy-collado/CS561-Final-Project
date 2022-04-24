@@ -121,7 +121,12 @@ void Tree::dump_tree_tiered_impl(Node *head) {
 }
 
 S_Node *Tree::node_to_aligned_snode(Node *node) {
+#ifdef __linux__
   S_Node *s_node = (S_Node *)aligned_alloc(512, sizeof(S_Node));
+#else
+  S_Node *s_node = new S_Node;
+#endif
+
   s_node->id = node->key;
 
   std::memcpy(s_node->payloads, node->values, node->numValues);

@@ -41,7 +41,13 @@ void TreeSerializer::writeNode(S_Node *node) {
               << std::endl;
     exit(1);
   }
+
+#ifdef __linux__
   ssize_t bytes = pwrite(fd, (char *)node, sizeof(S_Node), offset);
+#else
+  ssize_t bytes = write(fd, (char *)node, sizeof(S_Node));
+#endif
+
   std::cout << "Bytes written: " << bytes << std::endl;
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not write\n[MESSAGE]: " +
@@ -59,7 +65,11 @@ S_Node *TreeSerializer::readNode() {
     return nullptr;
   }
   S_Node *node = new S_Node();
+#ifdef __linux__
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), read_offset);
+#else
+  ssize_t bytes = read(fd, (char *)node, sizeof(S_Node));
+#endif
   //		std::cout << "read node " << node->id << std::endl;
   //		std::cout << "Bytes read: " << bytes << std::endl;
   if (bytes <= 0) {
@@ -91,7 +101,11 @@ S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
  *
  */
 void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
+#ifdef __linux__
   ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(tier_offsets), 0);
+#else
+  ssize_t bytes = write(fd, (char *)metadata, sizeof(tier_offsets));
+#endif
   if (bytes <= 0)
     std::cout << "[ERROR]: Could not write metadata\n[MESSAGE]: " +
                      std::string(strerror(errno))
@@ -100,7 +114,11 @@ void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
 
 tier_offsets *TreeSerializer::read_offset_metadata() {
   tier_offsets *metadata = new tier_offsets();
+#ifdef __linux__
   ssize_t bytes = pread(fd, (char *)metadata, sizeof(tier_offsets), 0);
+#else
+  ssize_t bytes = read(fd, (char *)metadata, sizeof(tier_offsets));
+#endif
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not read metadata\n[MESSAGE]: " +
                      std::string(strerror(errno))

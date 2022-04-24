@@ -38,7 +38,7 @@ public:
   void dump_tree();
   void dump_tree_tiered() { dump_tree_tiered_impl(this->head); }
 
-  const Node *get_head_ref() { return head; }
+  Node *get_head_ref() { return head; }
 
   S_Node *digestNode() { return TS.readNode(); }
 
