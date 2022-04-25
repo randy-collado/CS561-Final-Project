@@ -30,7 +30,8 @@ int main(int argc, char **argv) {
 
   // S_Node *root = tree.read_from_TS(0);
 
-  printf("S_Node size: %d\n", sizeof(S_Node));
+  printf("S_Node size: %lld\n", sizeof(S_Node));
+  printf("Node Count: %lld\n", tree.nodeCount);
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -84,6 +85,12 @@ int main(int argc, char **argv) {
   end = std::chrono::high_resolution_clock::now();
   ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
   printf("Parallel DFS (Omp): %lld ns.\n", ms_int.count());
+
+  begin = std::chrono::high_resolution_clock::now();
+  std::cout << p_iddfs_omp(&tree, targetKey, tree.get_max_level()) << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+  printf("Parallel IDDFS (Omp): %lld ns.\n", ms_int.count());
 
   return 0;
 }
