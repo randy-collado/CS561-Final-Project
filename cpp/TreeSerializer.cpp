@@ -4,8 +4,8 @@
 #define align(p, a) (((long)(p) + (a - 1)) & ~(a - 1))
 
 TreeSerializer::TreeSerializer()
-    : mode_internal(MODE::INVALID), offset(0), at_eof(false),
-      read_offset(sizeof(tier_offsets)) {
+    : mode_internal(MODE::INVALID), write_offset(0), at_eof(false),
+      read_offset(0) {
 #ifndef _WIN32
   fd = -1;
 #endif
@@ -67,7 +67,7 @@ void TreeSerializer::openFile(std::string filepath, MODE mode) {
 #endif
 }
 
-void TreeSerializer::writeNode(S_Node *node) {
+void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
   if (mode_internal == MODE::READ || mode_internal == MODE::INVALID) {
     std::cerr << "[ERROR]: Serializer in an invalid state\n[REASON]: Must be "
                  "initialized to write mode via MODE::WRITE"
@@ -75,17 +75,16 @@ void TreeSerializer::writeNode(S_Node *node) {
     exit(1);
   }
 
-  // printf("Offset: %lld\n", offset);
+  // printf("Write %d to %d\n", node->key, offset / 512);
 
+  write_offset = offset;
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-  ol.Offset = offset;
+  ol.Offset = write_offset;
   ol.OffsetHigh = 0;
   DWORD bytes;
 
-  // std::cout << node << std::endl;
-  // printf("Node size: %lld\n", sizeof(S_Node));
   if (!WriteFile(hf, (char *)node, sizeof(S_Node), &bytes, &ol)) {
     auto err = GetLastError();
     printf("Err: %ld\n", err);
@@ -93,7 +92,7 @@ void TreeSerializer::writeNode(S_Node *node) {
   }
   // printf("Bytes written: %ld\n", bytes);
 #else
-  ssize_t bytes = pwrite(fd, (char *)node, sizeof(S_Node), offset);
+  ssize_t bytes = pwrite(fd, (char *)node, sizeof(S_Node), write_offset);
   printf("Bytes written: %ld\n", bytes);
 #endif
   if (bytes <= 0) {
@@ -102,8 +101,6 @@ void TreeSerializer::writeNode(S_Node *node) {
               << std::endl;
     return;
   }
-  // Update offsets
-  this->offset += bytes;
 }
 
 S_Node *TreeSerializer::readNode() {
@@ -146,10 +143,11 @@ S_Node *TreeSerializer::readNode() {
  * struct, but casting might be needed in this case
  */
 S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
-  if (!(offset % S_NODE_SIZE)) {
+  if ((offset % S_NODE_SIZE) != 0) {
     return nullptr;
   }
 #ifdef _WIN32
+  // Set read offset
   read_offset = offset;
 #else
   off_t bytes = lseek(fd, 0, SEEK_SET);
@@ -208,4 +206,4 @@ tier_offsets *TreeSerializer::read_offset_metadata() {
   return metadata;
 }
 
-size_t TreeSerializer::get_current_offset() { return offset; }
+// size_t TreeSerializer::get_current_offset() { return offset; }

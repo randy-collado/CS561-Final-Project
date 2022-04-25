@@ -1,47 +1,52 @@
 #include "algorithm.hpp"
 
-bool s_bfs(Node *root, int key) {
-  std::queue<Node *> nodeQ;
-  nodeQ.push(root);
-  while (!nodeQ.empty()) {
-    Node *curNode = nodeQ.front();
-    nodeQ.pop();
-    if (curNode->key == key)
+bool s_bfs(Tree *tree, int key) {
+  std::deque<int> offsetQ;
+  offsetQ.push_back(0);
+
+  while (!offsetQ.empty()) {
+    // printf("%d\n", offsetQ.front());
+    S_Node *s_node = tree->read_from_TS(offsetQ.front());
+    // std::cout << s_node << std::endl;
+    offsetQ.pop_front();
+    if (s_node->key == key)
       return true;
-    for (size_t i = 0; i < curNode->numChildren; i++) {
-      nodeQ.push(curNode->children[i]);
+    for (int i = 0; i < s_node->numChildren; i++) {
+      offsetQ.insert(offsetQ.end(), s_node->children,
+                     s_node->children + s_node->numChildren);
     }
   }
   return false;
 }
 
-bool s_dfs(Node *curNode, int key) {
-  if (curNode->key == key)
+bool s_dfs(Tree *tree, int offset, int key) {
+  S_Node *s_node = tree->read_from_TS(offset);
+  if (s_node->key == key)
     return true;
-  for (size_t i = 0; i < curNode->numChildren; i++) {
-    if (s_dfs(curNode->children[i], key))
+  for (int i = 0; i < s_node->numChildren; i++) {
+    if (s_dfs(tree, s_node->children[i], key))
       return true;
   }
   return false;
 }
 
-bool s_iddfs_worker(Node *curNode, int key, size_t depLeft) {
-  if (curNode->key == key)
+bool s_iddfs_worker(Tree *tree, int offset, int key, size_t depLeft) {
+  S_Node *s_node = tree->read_from_TS(offset);
+  if (s_node->key == key)
     return true;
   if (depLeft == 0)
     return false;
-  for (size_t i = 0; i < curNode->numChildren; i++) {
-    if (s_iddfs_worker(curNode->children[i], key, depLeft - 1))
+  for (int i = 0; i < s_node->numChildren; i++) {
+    if (s_iddfs_worker(tree, s_node->children[i], key, depLeft - 1))
       return true;
   }
   return false;
 }
 
-bool s_iddfs(Node *root, int key, size_t maxDepth) {
-  // printf("Max Depth: %lld\n", maxDepth);
+bool s_iddfs(Tree *tree, int key, size_t maxDepth) {
   size_t dep = 1;
   while (dep <= maxDepth) {
-    if (s_iddfs_worker(root, key, dep))
+    if (s_iddfs_worker(tree, 0, key, dep))
       return true;
     dep++;
   }
@@ -102,11 +107,11 @@ bool s_iddfs(Node *root, int key, size_t maxDepth) {
 //   }
 // }
 
-bool p_bfs_omp(Node *root, int key) {
-  std::vector<Node *> frontier;
-  std::vector<Node *> next;
+bool p_bfs_omp(Tree *tree, int key) {
+  std::vector<int> frontier;
+  std::vector<int> next;
 
-  frontier.push_back(root);
+  frontier.push_back(0);
 
   bool isFound = false;
 
@@ -114,35 +119,35 @@ bool p_bfs_omp(Node *root, int key) {
 #pragma omp parallel
     {
 #pragma omp for nowait
-      for (size_t i = 0; i < frontier.size(); i++) {
-        Node *tmp = frontier[i]; // TODO: read node
-        if (tmp->key == key)
+      for (int i = 0; i < frontier.size(); i++) {
+        S_Node *s_node = tree->read_from_TS(frontier[i]);
+        if (s_node->key == key)
           isFound = true;
         if (isFound)
           continue;
-        std::vector<Node *> next_private(tmp->children,
-                                         tmp->children + tmp->numChildren);
+        std::vector<int> next_private(s_node->children,
+                                      s_node->children + s_node->numChildren);
 #pragma omp critical
         next.insert(next.end(), next_private.begin(), next_private.end());
       }
     }
     frontier = next;
-    // next = std::vector<Node *>();
     next.clear();
   }
 
   return isFound;
 }
 
-bool p_dfs_omp(Node *curNode, int key) {
-  if (curNode->key == key)
+bool p_dfs_omp(Tree *tree, int offset, int key) {
+  S_Node *s_node = tree->read_from_TS(offset);
+  if (s_node->key == key)
     return true;
 
   bool isFound = false;
 
 #pragma omp parallel for
-  for (size_t i = 0; i < curNode->numChildren; i++) {
-    if (!isFound && p_dfs_omp(curNode->children[i], key))
+  for (int i = 0; i < s_node->numChildren; i++) {
+    if (!isFound && p_dfs_omp(tree, s_node->children[i], key))
       isFound = true;
   }
   return isFound;

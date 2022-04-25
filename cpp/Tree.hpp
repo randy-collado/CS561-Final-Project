@@ -6,6 +6,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -24,30 +25,34 @@ struct Node {
   int key;
   int values[8];
   Node *children[8];
+  int number;
 };
 
 class Tree {
 public:
   Tree(size_t branchingFactor)
-      : head(nullptr), branch(branchingFactor), maxLevel(0), ts_init(false) {}
+      : head(nullptr), nodeCount(0), branch(branchingFactor), maxLevel(0), ts_init(false) {}
 
   ~Tree() {}
 
   void init_serializer(std::string filename);
-  S_Node *node_to_snode(Node *node);
+
   void fill(long numInserts, long upperBound, std::vector<int> &keys,
             std::vector<int> &values);
   void add(int key, int value);
-  void dump_tree();
-  void dump_tree_tiered() { dump_tree_tiered_impl(this->head); }
 
-  Node *get_head_ref() { return head; }
+  void dump_tree();
+  // void dump_tree_tiered() { dump_tree_tiered_impl(this->head); }
+
+  const Node *get_head_ref() { return head; }
 
   S_Node *digestNode() { return TS.readNode(); }
 
   tier_offsets digest_metadata() { return *TS.read_offset_metadata(); }
 
   size_t get_max_level() { return maxLevel; }
+
+  S_Node *read_from_TS(int offset);
 
 private:
   void add_impl(int key, int value);
@@ -56,9 +61,13 @@ private:
 
   void dump_tree_tiered_impl(Node *head);
 
+  S_Node *node_to_snode(Node *node);
   S_Node *node_to_aligned_snode(Node *node);
+
+  // Node *snode_to_node(S_Node *s_node);
+
   Node *head;
-  size_t numElements;
+  size_t nodeCount;
   size_t branch;
   size_t maxLevel;
   TreeSerializer TS;
