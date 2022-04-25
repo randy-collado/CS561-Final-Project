@@ -44,8 +44,9 @@ public:
 private:
 #ifdef _WIN32
   HANDLE hf;
-#endif
+#else
   int fd;
+#endif
   MODE mode_internal;
   size_t offset;
   bool at_eof;
