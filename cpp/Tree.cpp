@@ -102,6 +102,8 @@ void Tree::dump_tree_tiered_impl(Node *head) {
   std::deque<Node *> queue = std::deque<Node *>();
   queue.push_back(head);
   size_t currentLevel = head->level;
+
+
   while (!queue.empty()) {
     Node *currentNode = queue.front();
     queue.pop_front();
@@ -111,7 +113,8 @@ void Tree::dump_tree_tiered_impl(Node *head) {
       tiers->offsets[tiers->tiers++] = TS.get_current_offset();
       currentLevel = currentNode->level;
     }
-    auto s_node_ptr = node_to_snode(head);
+    // Aligned
+    auto s_node_ptr = node_to_aligned_snode(head);
     TS.writeNode(s_node_ptr);
     delete s_node_ptr;
     queue.insert(queue.end(), currentNode->children,
@@ -122,7 +125,7 @@ void Tree::dump_tree_tiered_impl(Node *head) {
 
 S_Node *Tree::node_to_aligned_snode(Node *node) {
 #ifdef _WIN32
-  S_Node *s_node = (S_Node *)_aligned_malloc(512, sizeof(S_Node));
+  S_Node *s_node = (S_Node *)_aligned_malloc(sizeof(S_Node), 512);
 #else
   S_Node *s_node = (S_Node *)aligned_alloc(512, sizeof(S_Node));
 #endif

@@ -17,15 +17,17 @@ int main(int argc, char **argv) {
 
   tree.fill(num_elements, num_elements / 5, keys, values);
 
-  // tree.init_serializer(argv[1]);
-  // tree.dump_tree_tiered();
-  // auto maybe_metadata = tree.digest_metadata();
-  // for (size_t i = 0; i < maybe_metadata.tiers; ++i) {
-  //   std::cout << maybe_metadata.offsets[i] << std::endl;
-  // }
+  tree.init_serializer(argv[1]);
+  tree.dump_tree_tiered();
+  auto maybe_metadata = tree.digest_metadata();
+  for (size_t i = 0; i < maybe_metadata.tiers; ++i) {
+    std::cout << maybe_metadata.offsets[i] << std::endl;
+  }
+
+  return 0;
 
   Node *root = tree.get_head_ref();
-  
+
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> distrib(0, num_elements);
