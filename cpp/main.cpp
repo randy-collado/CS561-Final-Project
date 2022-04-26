@@ -102,5 +102,11 @@ int main(int argc, char **argv) {
   ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
   printf("Parallel IDDFS (Omp): %lld ns.\n", ms_int.count());
 
+  begin = std::chrono::high_resolution_clock::now();
+  std::cout << p_mixed_omp(&tree, 0, targetKey) << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+  printf("Parallel Mixed (Omp): %lld ns.\n", ms_int.count());
+
   return 0;
 }

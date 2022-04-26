@@ -18,3 +18,5 @@ bool p_bfs_omp(Tree *tree, int key);
 bool p_dfs_omp(Tree *tree, int offset, int key);
 bool p_iddfs_omp(Tree *tree, int key, size_t maxDepth);
 bool p_iddfs_worker(Tree *tree, int offset, int key, size_t depLeft);
+
+bool p_mixed_omp(Tree *tree, int offset, int key);
