@@ -1,22 +1,47 @@
 #include "algorithm.hpp"
 
 bool s_bfs(Tree *tree, int key) {
-  std::deque<int> offsetQ;
-  offsetQ.push_back(0);
+  std::vector<int> frontier;
+  std::vector<int> next;
 
-  while (!offsetQ.empty()) {
-    // printf("%d\n", offsetQ.front());
-    S_Node *s_node = tree->read_from_TS(offsetQ.front());
-    // std::cout << s_node << std::endl;
-    offsetQ.pop_front();
-    if (s_node->key == key)
-      return true;
-    for (int i = 0; i < s_node->numChildren; i++) {
-      offsetQ.insert(offsetQ.end(), s_node->children,
-                     s_node->children + s_node->numChildren);
+  frontier.push_back(0);
+
+  bool isFound = false;
+  int rfCnt = 0;
+
+  while (!isFound && frontier.size() > 0) {
+    for (size_t i = 0; i < frontier.size(); i++) {
+      S_Node *s_node = tree->read_from_TS(frontier[i]);
+      rfCnt++;
+      if (s_node->key == key)
+        isFound = true;
+      if (isFound || s_node->numChildren == 0)
+        continue;
+      std::vector<int> next_private(s_node->children,
+                                    s_node->children + s_node->numChildren);
+      next.insert(next.end(), next_private.begin(), next_private.end());
     }
+    frontier = next;
+    next.clear();
   }
-  return false;
+  printf("Read file count = %d\n", rfCnt);
+  return isFound;
+  // std::deque<int> offsetQ;
+  // offsetQ.push_back(0);
+
+  // while (!offsetQ.empty()) {
+  //   // printf("%d\n", offsetQ.front());
+  //   S_Node *s_node = tree->read_from_TS(offsetQ.front());
+  //   // std::cout << s_node << std::endl;
+  //   offsetQ.pop_front();
+  //   if (s_node->key == key)
+  //     return true;
+  //   for (int i = 0; i < s_node->numChildren; i++) {
+  //     offsetQ.insert(offsetQ.end(), s_node->children,
+  //                    s_node->children + s_node->numChildren);
+  //   }
+  // }
+  // return false;
 }
 
 bool s_dfs(Tree *tree, int offset, int key) {
@@ -114,27 +139,27 @@ bool p_bfs_omp(Tree *tree, int key) {
   frontier.push_back(0);
 
   bool isFound = false;
-
+  int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
 #pragma omp parallel
     {
 #pragma omp for nowait
-      for (int i = 0; i < frontier.size(); i++) {
+      for (size_t i = 0; i < frontier.size(); i++) {
         S_Node *s_node = tree->read_from_TS(frontier[i]);
+        rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound)
+        if (isFound || s_node->numChildren == 0)
           continue;
-        std::vector<int> next_private(s_node->children,
-                                      s_node->children + s_node->numChildren);
 #pragma omp critical
-        next.insert(next.end(), next_private.begin(), next_private.end());
+        next.insert(next.end(), s_node->children,
+                    s_node->children + s_node->numChildren);
       }
     }
     frontier = next;
     next.clear();
   }
-
+  printf("Read file count = %d\n", rfCnt);
   return isFound;
 }
 
@@ -150,5 +175,75 @@ bool p_dfs_omp(Tree *tree, int offset, int key) {
     if (!isFound && p_dfs_omp(tree, s_node->children[i], key))
       isFound = true;
   }
+  return isFound;
+}
+
+bool p_iddfs_worker(Tree *tree, int offset, int key, size_t depLeft) {
+  S_Node *s_node = tree->read_from_TS(offset);
+  if (s_node->key == key)
+    return true;
+  if (depLeft == 0)
+    return false;
+
+  bool isFound = false;
+#pragma omp parallel for
+  for (int i = 0; i < s_node->numChildren; i++) {
+    if (isFound)
+      continue;
+    isFound |= p_iddfs_worker(tree, s_node->children[i], key, depLeft - 1);
+  }
+  return isFound;
+}
+
+bool p_iddfs_omp(Tree *tree, int key, size_t maxDepth) {
+  bool isFound = false;
+#pragma omp parallel for
+  for (size_t i = 1; i <= maxDepth; i++) {
+    if (isFound)
+      continue;
+    if (p_iddfs_worker(tree, 0, key, i))
+      isFound = true;
+  }
+  return isFound;
+}
+
+bool p_mixed_omp(Tree *tree, int offset, int key) {
+  std::vector<int> frontier;
+  std::vector<int> next;
+
+  frontier.push_back(offset);
+  int cThres = 3;
+  bool isFound = false;
+  int rfCnt = 0;
+  // printf("Offset: %d\n", offset);
+  while (!isFound && frontier.size() > 0) {
+#pragma omp parallel
+    {
+#pragma omp for nowait
+      for (size_t i = 0; i < frontier.size(); i++) {
+        S_Node *s_node = tree->read_from_TS(frontier[i]);
+        rfCnt++;
+        if (s_node->key == key)
+          isFound = true;
+        if (isFound || s_node->numChildren == 0)
+          continue;
+        if (s_node->numChildren > cThres) {
+#pragma omp critical
+          next.insert(next.end(), s_node->children,
+                      s_node->children + s_node->numChildren);
+        } else {
+#pragma omp parallel for
+          for (int i = 0; i < s_node->numChildren; i++) {
+            if (isFound)
+              continue;
+            isFound |= p_mixed_omp(tree, s_node->children[i], key);
+          }
+        }
+      }
+    }
+    frontier = next;
+    next.clear();
+  }
+  // printf("Read file count = %d\n", rfCnt);
   return isFound;
 }

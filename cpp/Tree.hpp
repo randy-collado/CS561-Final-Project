@@ -31,7 +31,8 @@ struct Node {
 class Tree {
 public:
   Tree(size_t branchingFactor)
-      : head(nullptr), nodeCount(0), branch(branchingFactor), maxLevel(0), ts_init(false) {}
+      : nodeCount(0), head(nullptr), branch(branchingFactor), maxLevel(0),
+        ts_init(false) {}
 
   ~Tree() {}
 
@@ -54,6 +55,8 @@ public:
 
   S_Node *read_from_TS(int offset);
 
+  size_t nodeCount;
+
 private:
   void add_impl(int key, int value);
 
@@ -67,7 +70,7 @@ private:
   // Node *snode_to_node(S_Node *s_node);
 
   Node *head;
-  size_t nodeCount;
+
   size_t branch;
   size_t maxLevel;
   TreeSerializer TS;

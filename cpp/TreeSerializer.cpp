@@ -21,7 +21,8 @@ TreeSerializer::~TreeSerializer() {
 
 void TreeSerializer::openFile(std::string filepath, MODE mode) {
 #ifdef _WIN32
-  DWORD dwflags = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING;
+  DWORD dwflags =
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED;
   switch (mode) {
   case MODE::READ: // READ
     hf = CreateFileA(filepath.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
@@ -85,15 +86,22 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
   ol.OffsetHigh = 0;
   DWORD bytes;
 
-  if (!WriteFile(hf, (char *)node, sizeof(S_Node), &bytes, &ol)) {
+  if (!WriteFile(hf, (char *)node, sizeof(S_Node), NULL, &ol)) {
     auto err = GetLastError();
-    printf("Err: %ld\n", err);
-    exit(1);
+    if (err != ERROR_IO_PENDING) {
+      printf("Err: %ld\n", err);
+      exit(1);
+    } else {
+      if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
+        printf("Err: %ld\n", err);
+        exit(1);
+      }
+    }
   }
   // printf("Bytes written: %ld\n", bytes);
 #else
   ssize_t bytes = pwrite(fd, (char *)node, sizeof(S_Node), write_offset);
-  printf("Bytes written: %ld\n", bytes);
+  // printf("Bytes written: %ld\n", bytes);
 #endif
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not write\n[MESSAGE]: " +
@@ -118,8 +126,15 @@ S_Node *TreeSerializer::readNode() {
   DWORD bytes;
   if (!ReadFile(hf, node, sizeof(S_Node), &bytes, &ol)) {
     auto err = GetLastError();
-    printf("Err: %ld\n", err);
-    exit(1);
+    if (err != ERROR_IO_PENDING) {
+      printf("Err: %ld\n", err);
+      exit(1);
+    } else {
+      if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
+        printf("Err: %ld\n", err);
+        exit(1);
+      }
+    }
   }
   // printf("Read %ld\n", bytes);
 #else
@@ -169,8 +184,15 @@ void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
   DWORD bytes;
   if (!WriteFile(hf, metadata, sizeof(tier_offsets), &bytes, &ol)) {
     auto err = GetLastError();
-    printf("Err: %ld\n", err);
-    exit(1);
+    if (err != ERROR_IO_PENDING) {
+      printf("Err: %ld\n", err);
+      exit(1);
+    } else {
+      if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
+        printf("Err: %ld\n", err);
+        exit(1);
+      }
+    }
   }
 #else
   ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(tier_offsets), 0);
@@ -191,8 +213,15 @@ tier_offsets *TreeSerializer::read_offset_metadata() {
   DWORD bytes;
   if (!ReadFile(hf, metadata, sizeof(tier_offsets), &bytes, &ol)) {
     auto err = GetLastError();
-    printf("Err: %ld\n", err);
-    exit(1);
+    if (err != ERROR_IO_PENDING) {
+      printf("Err: %ld\n", err);
+      exit(1);
+    } else {
+      if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
+        printf("Err: %ld\n", err);
+        exit(1);
+      }
+    }
   }
 #else
   ssize_t bytes = pread(fd, (char *)metadata, sizeof(tier_offsets), 0);

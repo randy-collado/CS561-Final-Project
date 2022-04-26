@@ -30,7 +30,6 @@ S_Node *Tree::read_from_TS(int offset) {
 }
 
 void Tree::add_impl(int key, int value) {
-  std::deque<Node *> queue = std::deque<Node *>();
   if (head == nullptr) {
     head = new Node(branch);
     head->number = nodeCount++;
@@ -39,32 +38,74 @@ void Tree::add_impl(int key, int value) {
     head->level = 0;
     return;
   }
-  queue.push_back(head);
-  while (!queue.empty()) {
-    Node *currentNode = queue.front();
-    queue.pop_front();
-    if (currentNode == nullptr) {
-      assert(false && "unreachable");
-    } else if (currentNode->key == key) {
-      if (currentNode->numValues < currentNode->maxValues)
-        currentNode->values[currentNode->numValues++] = value;
-      return;
-    } else if (currentNode->numChildren < branch) {
-      Node *node = new Node(branch);
-      node->number = nodeCount++;
-      node->key = key;
-      node->values[node->numValues++] = value;
-      node->level = currentNode->level + 1;
-      if (node->level > maxLevel) {
-        maxLevel = node->level;
+
+  std::vector<Node *> frontier;
+  std::vector<Node *> next;
+
+  frontier.push_back(head);
+
+  while (frontier.size() > 0) {
+    for (size_t i = 0; i < frontier.size(); i++) {
+      Node *curNode = frontier[i];
+      if (curNode->key == key) {
+        if (curNode->numValues < curNode->maxValues)
+          curNode->values[curNode->numValues++] = value;
+        return;
+      } else if (curNode->numChildren < curNode->maxChildren) {
+        Node *node = new Node(branch);
+        node->number = nodeCount++;
+        node->key = key;
+        node->values[node->numValues++] = value;
+        node->level = curNode->level + 1;
+        if (node->level > maxLevel) {
+          maxLevel = node->level;
+        }
+        curNode->children[curNode->numChildren++] = node;
+        return;
       }
-      currentNode->children[currentNode->numChildren++] = node;
-      return;
-    } else {
-      queue.insert(queue.end(), currentNode->children,
-                   currentNode->children + currentNode->numChildren);
+      std::vector<Node *> next_private(
+          curNode->children, curNode->children + curNode->numChildren);
+      next.insert(next.end(), next_private.begin(), next_private.end());
     }
+    frontier = next;
+    next.clear();
   }
+
+  // std::deque<Node *> queue = std::deque<Node *>();
+  // if (head == nullptr) {
+  //   head = new Node(branch);
+  //   head->number = nodeCount++;
+  //   head->key = key;
+  //   head->values[head->numValues++] = value;
+  //   head->level = 0;
+  //   return;
+  // }
+  // queue.push_back(head);
+  // while (!queue.empty()) {
+  //   Node *currentNode = queue.front();
+  //   queue.pop_front();
+  //   if (currentNode == nullptr) {
+  //     assert(false && "unreachable");
+  //   } else if (currentNode->key == key) {
+  //     if (currentNode->numValues < currentNode->maxValues)
+  //       currentNode->values[currentNode->numValues++] = value;
+  //     return;
+  //   } else if (currentNode->numChildren < branch) {
+  //     Node *node = new Node(branch);
+  //     node->number = nodeCount++;
+  //     node->key = key;
+  //     node->values[node->numValues++] = value;
+  //     node->level = currentNode->level + 1;
+  //     if (node->level > maxLevel) {
+  //       maxLevel = node->level;
+  //     }
+  //     currentNode->children[currentNode->numChildren++] = node;
+  //     return;
+  //   } else {
+  //     queue.insert(queue.end(), currentNode->children,
+  //                  currentNode->children + currentNode->numChildren);
+  //   }
+  // }
 }
 
 void Tree::dump_tree_impl(Node *head) {
@@ -79,7 +120,7 @@ void Tree::dump_tree_impl(Node *head) {
   TS.writeNodeWithOffset(s_node_ptr, 512 * head->number);
 
 #pragma omp parallel for
-  for (int i = 0; i < head->numChildren; i++) {
+  for (size_t i = 0; i < head->numChildren; i++) {
     dump_tree_impl(head->children[i]);
   }
 
@@ -165,7 +206,6 @@ S_Node *Tree::node_to_aligned_snode(Node *node) {
 
   for (size_t i = 0; i < node->numChildren; ++i) {
     s_node->children[i] = 512 * node->children[i]->number;
-    // printf("%d %d\n", i, s_node->children[i]);
   }
   return s_node;
 }
