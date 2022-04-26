@@ -15,7 +15,7 @@ bool s_bfs(Tree *tree, int key) {
       rfCnt++;
       if (s_node->key == key)
         isFound = true;
-      if (isFound)
+      if (isFound || s_node->numChildren == 0)
         continue;
       std::vector<int> next_private(s_node->children,
                                     s_node->children + s_node->numChildren);
@@ -149,10 +149,9 @@ bool p_bfs_omp(Tree *tree, int key) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound)
+        if (isFound || s_node->numChildren == 0)
           continue;
 #pragma omp critical
-        // printf("%d\n", s_node->numChildren);
         next.insert(next.end(), s_node->children,
                     s_node->children + s_node->numChildren);
       }
@@ -191,8 +190,7 @@ bool p_iddfs_worker(Tree *tree, int offset, int key, size_t depLeft) {
   for (int i = 0; i < s_node->numChildren; i++) {
     if (isFound)
       continue;
-    if (p_iddfs_worker(tree, s_node->children[i], key, depLeft - 1))
-      isFound = true;
+    isFound |= p_iddfs_worker(tree, s_node->children[i], key, depLeft - 1);
   }
   return isFound;
 }
@@ -217,6 +215,7 @@ bool p_mixed_omp(Tree *tree, int offset, int key) {
   int cThres = 3;
   bool isFound = false;
   int rfCnt = 0;
+  // printf("Offset: %d\n", offset);
   while (!isFound && frontier.size() > 0) {
 #pragma omp parallel
     {
@@ -226,7 +225,7 @@ bool p_mixed_omp(Tree *tree, int offset, int key) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound)
+        if (isFound || s_node->numChildren == 0)
           continue;
         if (s_node->numChildren > cThres) {
 #pragma omp critical
