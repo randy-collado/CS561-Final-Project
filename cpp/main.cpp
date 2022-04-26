@@ -6,16 +6,26 @@
 #include <vector>
 
 int main(int argc, char **argv) {
-  if (argc < 4) {
-    std::cerr
-        << "[ERROR]: Usage is ./treefile <filepath> <num_elements> <max_key>"
-        << std::endl;
+  if (argc < 3) {
+    std::cerr << "[ERROR]: Usage is ./treefile <filepath> <num_elements> "
+                 "(<max_key> <max_branch>)"
+              << std::endl;
     exit(1);
   }
   int num_elements = std::stol(argv[2]);
-  Tree tree(2);
+
+  int max_branch = 2;
+  if (argc >= 5)
+    max_branch = std::stoi(argv[4]);
+  if (max_branch > 8)
+    max_branch = 8;
+
+  Tree tree(max_branch);
   std::vector<int> keys, values;
-  int maxKey = std::stoi(argv[3]);
+
+  int maxKey = num_elements;
+  if (argc >= 4)
+    maxKey = std::stoi(argv[3]);
 
   tree.fill(num_elements, maxKey, keys, values);
 
