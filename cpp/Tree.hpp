@@ -47,7 +47,7 @@ public:
 
   const Node *get_head_ref() { return head; }
 
-  S_Node *digestNode() { return TS.readNode(); }
+  // S_Node *digestNode() { return TS.readNode(); }
 
   tier_offsets digest_metadata() { return *TS.read_offset_metadata(); }
 

@@ -36,7 +36,7 @@ public:
   ~TreeSerializer();
   void writeNodeWithOffset(S_Node *node, int offset);
   void openFile(std::string filepath, MODE mode);
-  S_Node *readNode();
+  S_Node *readNode(size_t offset);
   S_Node *readNodeFromOffset(size_t offset);
   // size_t get_current_offset();
   void write_offset_metadata(tier_offsets *metadata);
@@ -51,5 +51,4 @@ private:
   MODE mode_internal;
   size_t write_offset;
   bool at_eof;
-  size_t read_offset;
 };
