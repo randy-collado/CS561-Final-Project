@@ -4,8 +4,7 @@
 #define align(p, a) (((long)(p) + (a - 1)) & ~(a - 1))
 
 TreeSerializer::TreeSerializer()
-    : mode_internal(MODE::INVALID), write_offset(0), at_eof(false),
-      read_offset(0) {
+    : mode_internal(MODE::INVALID), write_offset(0), at_eof(false) {
 #ifndef _WIN32
   fd = -1;
 #endif
@@ -111,7 +110,7 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
   }
 }
 
-S_Node *TreeSerializer::readNode() {
+S_Node *TreeSerializer::readNode(size_t offset) {
   if (at_eof) {
     std::cerr << "[ERROR]: Could not read\n[MESSAGE]: EOF has been reached"
               << std::endl;
@@ -121,7 +120,7 @@ S_Node *TreeSerializer::readNode() {
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-  ol.Offset = read_offset;
+  ol.Offset = offset;
   ol.OffsetHigh = 0;
   DWORD bytes;
   if (!ReadFile(hf, node, sizeof(S_Node), &bytes, &ol)) {
@@ -136,12 +135,9 @@ S_Node *TreeSerializer::readNode() {
       }
     }
   }
-  // printf("Read %ld\n", bytes);
 #else
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), read_offset);
 #endif
-  //		std::cout << "read node " << node->id << std::endl;
-  //		std::cout << "Bytes read: " << bytes << std::endl;
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not read\n[MESSAGE]: " +
                      std::string(strerror(errno))
@@ -162,14 +158,13 @@ S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
     return nullptr;
   }
 #ifdef _WIN32
-  // Set read offset
-  read_offset = offset;
+  // Nothing to do here
 #else
   off_t bytes = lseek(fd, 0, SEEK_SET);
-  bytes = lseek(fd, sizeof(tier_offsets), SEEK_SET);
+  bytes = lseek(fd, sizeof(offset), SEEK_SET);
   bytes = lseek(fd, offset, SEEK_CUR);
 #endif
-  return readNode();
+  return readNode(offset);
 }
 
 /*

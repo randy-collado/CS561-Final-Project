@@ -13,12 +13,15 @@ int main(int argc, char **argv) {
     exit(1);
   }
   int num_elements = std::stol(argv[2]);
+  printf("# of elements: %d\n", num_elements);
 
   int max_branch = 2;
   if (argc >= 5)
     max_branch = std::stoi(argv[4]);
   if (max_branch > 8)
     max_branch = 8;
+
+  printf("Branch size: %d\n", max_branch);
 
   Tree tree(max_branch);
   std::vector<int> keys, values;
@@ -27,10 +30,13 @@ int main(int argc, char **argv) {
   if (argc >= 4)
     maxKey = std::stoi(argv[3]);
 
+  printf("Maximum key: %d\n", maxKey);
+
   tree.fill(num_elements, maxKey, keys, values);
 
   tree.init_serializer(argv[1]);
   tree.dump_tree();
+
   // auto maybe_metadata = tree.digest_metadata();
   // for (size_t i = 0; i < maybe_metadata.tiers; ++i) {
   //   std::cout << maybe_metadata.offsets[i] << std::endl;
@@ -54,59 +60,79 @@ int main(int argc, char **argv) {
   std::cout << s_dfs(&tree, 0, targetKey) << std::endl;
   auto end = std::chrono::high_resolution_clock::now();
   auto ms_int =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Serial DFS: %lld ns.\n", ms_int.count());
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial DFS: %lld ms.\n", ms_int.count());
+
+  begin = std::chrono::high_resolution_clock::now();
+  std::cout << s_dfs_2(&tree, targetKey) << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial DFS (No recursive): %lld ms.\n", ms_int.count());
 
   begin = std::chrono::high_resolution_clock::now();
   std::cout << s_bfs(&tree, targetKey) << std::endl;
   end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Serial BFS: %lld ns.\n", ms_int.count());
+  ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial BFS: %lld ms.\n", ms_int.count());
 
   begin = std::chrono::high_resolution_clock::now();
   std::cout << s_iddfs(&tree, targetKey, tree.get_max_level()) << std::endl;
   end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Serial IDDFS: %lld ns.\n", ms_int.count());
+  ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial IDDFS: %lld ms.\n", ms_int.count());
 
-  // begin = std::chrono::high_resolution_clock::now();
-  // p_sche(root, 0, 4);
+  for (int i = 16; i <= 256; i *= 2) {
+    // begin = std::chrono::high_resolution_clock::now();
+    // p_sche(root, 0, 4);
 
-  // end = std::chrono::high_resolution_clock::now();
-  // ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  // std::cout << "Parallel BFS " << ms_int.count() << std::endl;
+    // end = std::chrono::high_resolution_clock::now();
+    // ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end -
+    // begin); std::cout << "Parallel BFS " << ms_int.count() << std::endl;
 
-  // begin = std::chrono::high_resolution_clock::now();
+    // begin = std::chrono::high_resolution_clock::now();
 
-  // p_sche(root, 1, 4);
+    // p_sche(root, 1, 4);
 
-  // end = std::chrono::high_resolution_clock::now();
-  // ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  // std::cout << "Parallel DFS " << ms_int.count() << std::endl;
+    // end = std::chrono::high_resolution_clock::now();
+    // ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end -
+    // begin); std::cout << "Parallel DFS " << ms_int.count() << std::endl;
 
-  begin = std::chrono::high_resolution_clock::now();
-  std::cout << p_bfs_omp(&tree, targetKey) << std::endl;
-  end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Parallel BFS (Omp): %lld ns.\n", ms_int.count());
+    omp_set_num_threads(i);
+    printf("Thread Count: %d\n", i);
 
-  begin = std::chrono::high_resolution_clock::now();
-  std::cout << p_dfs_omp(&tree, 0, targetKey) << std::endl;
-  end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Parallel DFS (Omp): %lld ns.\n", ms_int.count());
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_bfs_omp(&tree, targetKey) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel BFS (Omp): %lld ms.\n", ms_int.count());
 
-  begin = std::chrono::high_resolution_clock::now();
-  std::cout << p_iddfs_omp(&tree, targetKey, tree.get_max_level()) << std::endl;
-  end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Parallel IDDFS (Omp): %lld ns.\n", ms_int.count());
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_dfs_omp(&tree, 0, targetKey) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel DFS (Omp): %lld ms.\n", ms_int.count());
 
-  begin = std::chrono::high_resolution_clock::now();
-  std::cout << p_mixed_omp(&tree, 0, targetKey) << std::endl;
-  end = std::chrono::high_resolution_clock::now();
-  ms_int = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-  printf("Parallel Mixed (Omp): %lld ns.\n", ms_int.count());
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_dfs_2_omp(&tree, targetKey) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel DFS (Omp, non-recursive): %lld ms.\n", ms_int.count());
+
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_iddfs_omp(&tree, targetKey, tree.get_max_level())
+              << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel IDDFS (Omp): %lld ms.\n", ms_int.count());
+
+    int brhThres = 3;
+
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_hybrid_omp(&tree, 0, targetKey, brhThres) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel Mixed (Omp): %lld ms.\n", ms_int.count());
+  }
 
   return 0;
 }
