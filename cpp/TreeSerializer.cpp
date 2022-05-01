@@ -57,7 +57,7 @@ void TreeSerializer::openFile(std::string filepath, MODE mode) {
   default:
     break;
   }
-  this->fd = open(filepath.c_str(), flags);
+  this->fd = open(filepath.c_str(), flags, 0777);
   if (this->fd < 0) {
     std::cerr << "[ERROR]: Serializer failed\n[MESSAGE]: file unable to be "
                  "opened or created";
@@ -133,6 +133,7 @@ S_Node *TreeSerializer::readNode(size_t offset) {
   }
 #else
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), offset);
+  // std::cout << "Read Node" << " Offset " << offset << " Key: " << node->key << " +++" << std::endl;
 #endif
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not read\n[MESSAGE]: " +

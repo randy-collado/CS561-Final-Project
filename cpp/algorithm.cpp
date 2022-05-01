@@ -205,7 +205,7 @@ bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
     return false;
 
   bool isFound = false;
-#pragma omp parallel for
+// #pragma omp parallel for
   for (int i = 0; i < s_node->numChildren; i++) {
     if (isFound)
       continue;

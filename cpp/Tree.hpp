@@ -40,6 +40,10 @@ public:
 
   void fill(long numInserts, long upperBound, std::vector<int> &keys,
             std::vector<int> &values);
+
+  void seq_fill(long numInserts, std::vector<int> &keys,
+            std::vector<int> &values);
+
   void add(int key, int value);
 
   void dump_tree();
