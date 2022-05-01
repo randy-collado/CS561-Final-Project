@@ -49,6 +49,5 @@ private:
   int fd;
 #endif
   MODE mode_internal;
-  size_t write_offset;
   bool at_eof;
 };
