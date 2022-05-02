@@ -26,4 +26,4 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres);
 bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize);
 
 bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize);
-bool p_dfs_omp(Tree *tree, int &key);
+bool p_dfs_omp(Tree *tree, int &key, int f_size);

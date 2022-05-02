@@ -30,37 +30,54 @@ bool s_dfs_2(Tree *tree, int &key) {
 }
 
 bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
+  bool isFound = false;
 
-  // bool isFound = false;
-
+#pragma omp taskgroup
   while (!frontier.empty()) {
+    if (isFound) {
+      break;
+    }
     S_Node *s_node = tree->read_from_TS(frontier.back());
 
-    if (s_node->key == key)
-      return true;
+    if (s_node->key == key) {
+      isFound = true;
+      break;
+    }
 
     frontier.pop_back();
 
     frontier.insert(frontier.end(), s_node->children,
                     s_node->children + s_node->numChildren);
     while (frontier.size() > fSize) {
+      if (isFound)
+        break;
       std::vector<int> frontier_new(frontier.begin() + frontier.size() / 2,
                                     frontier.end());
       frontier.resize(frontier.size() / 2);
-      // #pragma omp task nowait
-      if (_p_dfs_omp(tree, key, frontier_new, fSize))
-        return true;
+#pragma omp task shared(isFound)
+      if (_p_dfs_omp(tree, key, frontier_new, fSize)) {
+        isFound = true;
+#pragma omp cancel taskgroup
+      }
     }
   }
-  // #pragma omp taskwait
-
-  return false;
+  return isFound;
 }
 
-bool p_dfs_omp(Tree *tree, int &key) {
+bool p_dfs_omp(Tree *tree, int &key, int f_size) {
   std::vector<int> initFrontier;
-  int fSize = 16;
-  return _p_dfs_omp(tree, key, initFrontier, fSize);
+  int fSize = f_size;
+
+  initFrontier.push_back(0);
+  bool isFound;
+  std::cout << "Cancel " << omp_get_cancellation() << std::endl;
+#pragma omp parallel
+  {
+#pragma omp single
+    isFound = _p_dfs_omp(tree, key, initFrontier, fSize);
+#pragma omp taskwait
+  }
+  return isFound;
 }
 
 bool s_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
