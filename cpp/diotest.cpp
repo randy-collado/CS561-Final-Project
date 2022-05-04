@@ -10,6 +10,7 @@
 #include "TreeSerializer.hpp"
 #include <omp.h>
 #include <sched.h>
+#include <vector>
 
 void testRead(char* filepath){
     int fd = open(filepath, O_RDWR | O_CREAT | O_DIRECT);
@@ -34,8 +35,8 @@ void testRead(char* filepath){
     // if(ret<0) std::cout << "Could Not Read Offset "<< 0 <<" & Reason: " + std::string(strerror(errno))<<std::endl;
 }
 
-void testSerial(int fd){
-    for (int i=0; i<128; i++){
+void testSerial(int fd, int size){
+    for (int i=0; i<size; i++){
         int ret;
         char* buf;
         ret = posix_memalign((void **)&buf, 512, 512);
@@ -62,29 +63,12 @@ void parallelRead(int fd, int offset){
     if(ret<0) std::cout << "Could Not Read Offset "<< 512*offset <<" & Reason: " + std::string(strerror(errno))<<std::endl;
 }
 
-void testParallel(int fd){
+void testParallel(int fd, int size){
     #pragma omp parallel for
-    for (int i = 0; i < 128; i++)
+    for (int i = 0; i < size; i++)
     {
         parallelRead(fd, i);
     }
-
-    // std::thread t1(parallelRead, fd, 0);
-    // std::thread t2(parallelRead, fd, 1);
-    // std::thread t3(parallelRead, fd, 2);
-    // std::thread t4(parallelRead, fd, 3);
-    // std::thread t5(parallelRead, fd, 4);
-    // std::thread t6(parallelRead, fd, 5);
-    // std::thread t7(parallelRead, fd, 6);
-    // std::thread t8(parallelRead, fd, 7);
-    // t1.join();
-    // t2.join();
-    // t3.join();
-    // t4.join();
-    // t5.join();
-    // t6.join();
-    // t7.join();
-    // t8.join();
 }
 
 
@@ -99,14 +83,6 @@ int main(int argc, char** argv){
     // testRead(argv[1]);
 
     // Test 2: multithread to read direct io
-    cpu_set_t cpu_set;
-    CPU_ZERO(&cpu_set);
-    CPU_SET(0, &cpu_set);
-    CPU_SET(1, &cpu_set);
-    CPU_SET(2, &cpu_set);
-    CPU_SET(3, &cpu_set);
-    if(sched_setaffinity(0, sizeof(cpu_set), &cpu_set) < 0)
-        perror("sched_setaffinity");
 
     std::cout << "Start Testing" << std::endl;
     int fd = open(argv[1], O_RDONLY | O_DIRECT);
@@ -115,23 +91,20 @@ int main(int argc, char** argv){
         exit(1);
     }
     auto start = std::chrono::high_resolution_clock::now();
-    testSerial(fd);
+    testSerial(fd, std::stoi(argv[2]));
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "Serial Timing: " << duration.count() << std::endl;
 
-    for (int i = 1; i <= 64; i *= 2) {
+    std::vector<int> threads = {1, 2, 4, 8, 16, 32, 64, 80, 100, 120};
+    for (int i = 0; i < threads.size(); i ++) {
+        std::cout << "----- Thread " << threads.at(i) << " -----"  << std::endl; 
+        omp_set_num_threads(threads.at(i));
         start = std::chrono::high_resolution_clock::now();
-        std::cout << "----- Thread " << i << " -----"  << std::endl; 
-        omp_set_num_threads(i);
-        testParallel(fd);
+        testParallel(fd, std::stoi(argv[2]));
         stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         std::cout << "Parallel Timing: " << duration.count() << std::endl; 
     }
 
-    int ab = 100000000;
-    while (ab > 0){
-        ab --;
-    }
 }

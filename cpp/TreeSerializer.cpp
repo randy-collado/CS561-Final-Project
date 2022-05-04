@@ -132,7 +132,16 @@ S_Node *TreeSerializer::readNode(size_t offset) {
     }
   }
 #else
+    // int ret;
+    // char* buf;
+    // ret = posix_memalign((void **)&buf, 512, 512);
+    // if (ret) {
+    //     perror("posix_memalign failed");
+    //     exit(1);
+    // }
+    // ssize_t bytes = pread(fd, buf, sizeof(S_Node), offset);
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), offset);
+  // node = (S_Node*) buf;
   // std::cout << "Read Node" << " Offset " << offset << " Key: " << node->key << " +++" << std::endl;
 #endif
   if (bytes <= 0) {
