@@ -75,7 +75,7 @@ void testParallel(int fd, int size){
 
 int main(int argc, char** argv){
     if (argc < 3) {
-        std::cerr << "[ERROR]: Usage is ./diotest <filepath> <key>" << std::endl;
+        std::cerr << "[ERROR]: Usage is ./diotest <filepath> <NumofRandomReads>" << std::endl;
         exit(1);
     }
     

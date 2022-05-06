@@ -8,8 +8,8 @@
 #include <math.h>
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
-    std::cerr << "[ERROR]: Usage is ./main <filepath> <targetKey> <numKey> <branchsize>"
+  if (argc < 4) {
+    std::cerr << "[ERROR]: Usage is ./main <filepath> <targetKey> <numNode>"
               << std::endl;
     exit(1);
   }
@@ -17,86 +17,54 @@ int main(int argc, char **argv) {
   Tree tree(8);
   tree.init_serializer(argv[1]);
 
-  int numKey = 0;
-  int branchSize = std::stoi(argv[4]);
-  int maxlevel = 0;
-  while (numKey < std::stoi(argv[3])){
-    maxlevel ++;
-    numKey += pow(branchSize, maxlevel);
-  }
-  printf("Max Level: %d\n", maxlevel);
-
-
   // Test 1: direct IO + tuning fSize in parallel DFS
-  // int targetKey = std::stoi(argv[2]);
-  // printf("Target Key: %d\n", targetKey);
-  // auto begin = std::chrono::high_resolution_clock::now();
-  // std::cout << s_dfs(&tree, 0, targetKey) << std::endl;
-  // auto end = std::chrono::high_resolution_clock::now();
-  // auto ms_int =
-  //     std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  // printf("Serial DFS: %lld ms.\n", ms_int.count());
+  printf("==============Test 1: Not Exist Key + Variable Thread Number============");
+  int targetKey = -1;
+  printf("Target Key: %d\n", targetKey);
+  auto begin = std::chrono::high_resolution_clock::now();
+  std::cout << s_dfs(&tree, 0, targetKey) << std::endl;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto ms_int =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial DFS: %lld ms.\n", ms_int.count());
 
-  // begin = std::chrono::high_resolution_clock::now();
-  // std::cout << s_dfs_2(&tree, targetKey) << std::endl;
-  // end = std::chrono::high_resolution_clock::now();
-  // ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  // printf("Serial DFS (No recursive): %lld ms.\n", ms_int.count());
+  begin = std::chrono::high_resolution_clock::now();
+  std::cout << s_dfs_2(&tree, targetKey) << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial DFS (No recursive): %lld ms.\n", ms_int.count());
 
-  // begin = std::chrono::high_resolution_clock::now();
-  // std::cout << s_bfs(&tree, targetKey) << std::endl;
-  // end = std::chrono::high_resolution_clock::now();
-  // ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  // printf("Serial BFS: %lld ms.\n", ms_int.count());
+  begin = std::chrono::high_resolution_clock::now();
+  std::cout << s_bfs(&tree, targetKey) << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  printf("Serial BFS: %lld ms.\n", ms_int.count());
 
-  // std::vector<int> cpus = {1, 2, 4, 6, 8};
-  // std::vector<int> threads = {1, 2, 4, 8, 16, 32, 64, 80, 100, 120};
-  // for (int j=0; j < cpus.size(); j++){
-  //     cpu_set_t cpu_set;
-  //     CPU_ZERO(&cpu_set);
-  //     for (int cpu=0; cpu<cpus.at(j); cpu++){
-  //       CPU_SET(cpu, &cpu_set);
-  //     }
-  //     if(sched_setaffinity(0, sizeof(cpu_set), &cpu_set) < 0)
-  //           perror("sched_setaffinity");
-  //     printf("+++++++++++++++++++++++++++++++++++++\n");
-  //     printf("CPU Number: %d\n", cpus.at(j));
+  std::vector<int> cpus = {1, 2, 4, 6, 8};
+  std::vector<int> threads = {1, 2, 4, 8, 16, 32, 64, 80, 100, 120};
+  for (int i = 0; i < threads.size(); i ++) {
 
-      // for (int i = 0; i < threads.size(); i ++) {
+    printf("-----------Thread Number: %d--------------\n", threads.at(i));
 
-      //   printf("-----------Thread Number: %d--------------\n", threads.at(i));
+    omp_set_num_threads(threads.at(i));
 
-      //   omp_set_num_threads(threads.at(i));
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_bfs_omp(&tree, targetKey) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel BFS (Omp): %lld ms.\n", ms_int.count());
 
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << p_dfs_omp(&tree, targetKey, 8) << std::endl;
+    end = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    printf("Parallel DFS (Omp): %lld ms.\n", ms_int.count());
 
-      //   begin = std::chrono::high_resolution_clock::now();
-      //   std::cout << p_bfs_omp(&tree, targetKey) << std::endl;
-      //   end = std::chrono::high_resolution_clock::now();
-      //   ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      //   printf("Parallel BFS (Omp): %lld ms.\n", ms_int.count());
-
-      //   begin = std::chrono::high_resolution_clock::now();
-      //   std::cout << p_bfs_omp(&tree, targetKey) << std::endl;
-      //   end = std::chrono::high_resolution_clock::now();
-      //   ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      //   printf("Parallel BFS (Omp): %lld ms.\n", ms_int.count());
-
-      //   begin = std::chrono::high_resolution_clock::now();
-      //   std::cout << p_dfs_omp(&tree, targetKey, 8) << std::endl;
-      //   end = std::chrono::high_resolution_clock::now();
-      //   ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      //   printf("Parallel DFS (Omp): %lld ms.\n", ms_int.count());
-
-      //   begin = std::chrono::high_resolution_clock::now();
-      //   std::cout << p_dfs_omp(&tree, targetKey, 8) << std::endl;
-      //   end = std::chrono::high_resolution_clock::now();
-      //   ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-      //   printf("Parallel DFS (Omp): %lld ms.\n", ms_int.count());
-      // }
-  // }
+  }
 
 
   // Test 2: Algorithm Efficiency
+  printf("==============Test 2: Random Key + Variable fSize============");
   auto total_sbfs = 0;
   auto total_sdfs = 0;
   auto total_pbfs = 0;
