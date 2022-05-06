@@ -64,9 +64,9 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
   return isFound;
 }
 
-bool p_dfs_omp(Tree *tree, int &key) {
+bool p_dfs_omp(Tree *tree, int &key, int f_size) {
   std::vector<int> initFrontier;
-  int fSize = 16;
+  int fSize = f_size;
 
   initFrontier.push_back(0);
   bool isFound;
@@ -222,7 +222,7 @@ bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
     return false;
 
   bool isFound = false;
-#pragma omp parallel for
+// #pragma omp parallel for
   for (int i = 0; i < s_node->numChildren; i++) {
     if (isFound)
       continue;
