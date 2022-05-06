@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   tree.init_serializer(argv[1]);
 
   // Test 1: direct IO + tuning fSize in parallel DFS
-  printf("==============Test 1: Not Exist Key + Variable Thread Number============");
+  printf("==============Test 1: Not Exist Key + Variable Thread Number============\n");
   int targetKey = -1;
   printf("Target Key: %d\n", targetKey);
   auto begin = std::chrono::high_resolution_clock::now();
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
 
   // Test 2: Algorithm Efficiency
-  printf("==============Test 2: Random Key + Variable fSize============");
+  printf("==============Test 2: Random Key + Variable fSize============\n");
   auto total_sbfs = 0;
   auto total_sdfs = 0;
   auto total_pbfs = 0;
