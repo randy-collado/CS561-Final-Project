@@ -17,7 +17,7 @@ bool s_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft);
 bool s_iddfs(Tree *tree, int &key, size_t maxDepth);
 
 bool p_bfs_omp(Tree *tree, int &key);
-bool p_dfs_omp(Tree *tree, int offset, int &key);
+// bool p_dfs_omp(Tree *tree, int offset, int &key);
 bool p_iddfs_omp(Tree *tree, int &key, size_t maxDepth);
 bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft);
 
@@ -25,4 +25,5 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres);
 
 bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize);
 
-bool p_dfs_2_omp(Tree *tree, int &key);
+bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize);
+bool p_dfs_omp(Tree *tree, int &key, int f_size);

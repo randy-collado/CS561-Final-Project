@@ -24,6 +24,20 @@ void Tree::fill(long numInserts, long upperBound, std::vector<int> &keys,
   }
 }
 
+void Tree::seq_fill(long numInserts, std::vector<int> &keys,
+                std::vector<int> &values) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distrib(0, 100);
+  for (long i = 0; i < numInserts; ++i) {
+    int key = i;
+    int value = distrib(gen);
+    keys.push_back(key);
+    values.push_back(value);
+    add(key, value);
+  }
+}
+
 S_Node *Tree::read_from_TS(int offset) {
   S_Node *s_node = TS.readNodeFromOffset(offset);
   return s_node;
