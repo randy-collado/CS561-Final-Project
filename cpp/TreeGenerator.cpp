@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
   tree.seq_fill(num_elements, keys, values);
 
-  tree.init_serializer(argv[1]);
+  tree.init_serializer(argv[1], 1);
 
   tree.dump_tree();
 

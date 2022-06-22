@@ -36,7 +36,7 @@ public:
 
   ~Tree() {}
 
-  void init_serializer(std::string filename);
+  void init_serializer(std::string filename, int rw);
 
   void fill(long numInserts, long upperBound, std::vector<int> &keys,
             std::vector<int> &values);

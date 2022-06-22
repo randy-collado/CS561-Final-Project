@@ -1,9 +1,16 @@
 #include "Tree.hpp"
 #include <omp.h>
 
-void Tree::init_serializer(std::string filename) {
-  TS.openFile(filename, MODE::WRITE);
-  ts_init = true;
+void Tree::init_serializer(std::string filename, int rw) {
+  if (rw == 0) {
+    TS.openFile(filename, MODE::READ);
+    ts_init = true;
+  } else if (rw == 1) {
+    TS.openFile(filename, MODE::WRITE);
+    ts_init = true;
+  } else {
+    return;
+  }
 }
 
 void Tree::dump_tree() { dump_tree_impl(this->head); }
@@ -25,7 +32,7 @@ void Tree::fill(long numInserts, long upperBound, std::vector<int> &keys,
 }
 
 void Tree::seq_fill(long numInserts, std::vector<int> &keys,
-                std::vector<int> &values) {
+                    std::vector<int> &values) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> distrib(0, 100);

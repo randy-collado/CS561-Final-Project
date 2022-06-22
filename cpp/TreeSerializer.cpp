@@ -84,11 +84,11 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
   if (!WriteFile(hf, (char *)node, sizeof(S_Node), NULL, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
-      printf("Err: %ld\n", err);
+      printf("WriteNode 1 Err: %ld\n", err);
       exit(1);
     } else {
       if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
-        printf("Err: %ld\n", err);
+        printf("WriteNode 2 Err: %ld\n", err);
         exit(1);
       }
     }
@@ -119,14 +119,16 @@ S_Node *TreeSerializer::readNode(size_t offset) {
   ol.Offset = offset;
   ol.OffsetHigh = 0;
   DWORD bytes;
+  // printf("offset = 0x%llx\n", offset);
   if (!ReadFile(hf, node, sizeof(S_Node), &bytes, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
-      printf("Err: %ld\n", err);
+      printf("readNode 1 Err: %ld\n", err);
       exit(1);
     } else {
       if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
-        printf("Err: %ld\n", err);
+        err = GetLastError();
+        printf("readNode 2 Err: %ld\n", err);
         exit(1);
       }
     }
