@@ -47,13 +47,8 @@ public:
   void add(int key, int value);
 
   void dump_tree();
-  // void dump_tree_tiered() { dump_tree_tiered_impl(this->head); }
 
   const Node *get_head_ref() { return head; }
-
-  // S_Node *digestNode() { return TS.readNode(); }
-
-  tier_offsets digest_metadata() { return *TS.read_offset_metadata(); }
 
   size_t get_max_level() { return maxLevel; }
 

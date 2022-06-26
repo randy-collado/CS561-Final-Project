@@ -18,11 +18,6 @@ struct dummy_node {
   int z;
 };
 
-struct tier_offsets {
-  int tiers;
-  int offsets[511];
-};
-
 struct S_Node {
   int key;
   int numChildren;
@@ -30,17 +25,24 @@ struct S_Node {
   int children[8];               // offset of children nodes
 } __attribute__((aligned(512))); // GCC extension to align a struct
 
+struct S_MetaData {
+  int cntNode;
+  int maxBranch;
+} __attribute__((aligned(512)));
+
 class TreeSerializer {
 public:
   TreeSerializer();
   ~TreeSerializer();
+
+  void writeMetadata(S_MetaData *metadata);
+  S_MetaData *readMetadata();
+
   void writeNodeWithOffset(S_Node *node, int offset);
-  void openFile(std::string filepath, MODE mode);
-  S_Node *readNode(size_t offset);
   S_Node *readNodeFromOffset(size_t offset);
-  // size_t get_current_offset();
-  void write_offset_metadata(tier_offsets *metadata);
-  tier_offsets *read_offset_metadata();
+  
+  void openFile(std::string filepath, MODE mode);
+  
 
 private:
 #ifdef _WIN32

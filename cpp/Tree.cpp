@@ -164,41 +164,6 @@ void Tree::dump_tree_impl(Node *head) {
   // }
 }
 
-// void Tree::dump_tree_tiered_impl(Node *head) {
-//   if (!ts_init) {
-//     std::cerr << "[ERROR] Serializer was not initialized" << std::endl;
-//     exit(1);
-//   }
-//   if (!head)
-//     return;
-
-//   tier_offsets *tiers = new tier_offsets();
-//   tiers->tiers++;
-//   tiers->offsets[0] = sizeof(tier_offsets);
-
-//   std::deque<Node *> queue = std::deque<Node *>();
-//   queue.push_back(head);
-//   size_t currentLevel = head->level;
-
-//   while (!queue.empty()) {
-//     Node *currentNode = queue.front();
-//     queue.pop_front();
-//     if (currentNode == nullptr)
-//       assert(false && "Unreachable");
-//     if (currentLevel != currentNode->level) {
-//       tiers->offsets[tiers->tiers++] = TS.get_current_offset();
-//       currentLevel = currentNode->level;
-//     }
-//     // Aligned
-//     auto s_node_ptr = node_to_aligned_snode(head);
-//     TS.writeNode(s_node_ptr);
-//     delete s_node_ptr;
-//     queue.insert(queue.end(), currentNode->children,
-//                  currentNode->children + currentNode->numChildren);
-//   }
-//   TS.write_offset_metadata(tiers);
-// }
-
 S_Node *Tree::node_to_snode(
     Node *node) { // returns a pointer declared by new, user should delete
   S_Node *s_node = new S_Node();

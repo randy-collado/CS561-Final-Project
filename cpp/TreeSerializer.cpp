@@ -105,8 +105,17 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
     return;
   }
 }
-
-S_Node *TreeSerializer::readNode(size_t offset) {
+/*
+ * The parameters of this function should be a multiple of 512, the size of a
+ * node. Will return nullptr if the offset is not 512-byte aligned.
+ *
+ * Might be useful to allow this to return pointers to individual members of a
+ * struct, but casting might be needed in this case
+ */
+S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
+  if ((offset % S_NODE_SIZE) != 0) {
+    return nullptr;
+  }
   if (at_eof) {
     std::cerr << "[ERROR]: Could not read\n[MESSAGE]: EOF has been reached"
               << std::endl;
@@ -119,7 +128,6 @@ S_Node *TreeSerializer::readNode(size_t offset) {
   ol.Offset = offset;
   ol.OffsetHigh = 0;
   DWORD bytes;
-  // printf("offset = 0x%llx\n", offset);
   if (!ReadFile(hf, node, sizeof(S_Node), &bytes, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
@@ -134,17 +142,18 @@ S_Node *TreeSerializer::readNode(size_t offset) {
     }
   }
 #else
-    // int ret;
-    // char* buf;
-    // ret = posix_memalign((void **)&buf, 512, 512);
-    // if (ret) {
-    //     perror("posix_memalign failed");
-    //     exit(1);
-    // }
-    // ssize_t bytes = pread(fd, buf, sizeof(S_Node), offset);
+  // int ret;
+  // char* buf;
+  // ret = posix_memalign((void **)&buf, 512, 512);
+  // if (ret) {
+  //     perror("posix_memalign failed");
+  //     exit(1);
+  // }
+  // ssize_t bytes = pread(fd, buf, sizeof(S_Node), offset);
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), offset);
   // node = (S_Node*) buf;
-  // std::cout << "Read Node" << " Offset " << offset << " Key: " << node->key << " +++" << std::endl;
+  // std::cout << "Read Node" << " Offset " << offset << " Key: " << node->key
+  // << " +++" << std::endl;
 #endif
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not read\n[MESSAGE]: " +
@@ -154,31 +163,18 @@ S_Node *TreeSerializer::readNode(size_t offset) {
   }
   return node;
 }
-/*
- * The parameters of this function should be a multiple of 512, the size of a
- * node. Will return nullptr if the offset is not 512-byte aligned.
- *
- * Might be useful to allow this to return pointers to individual members of a
- * struct, but casting might be needed in this case
- */
-S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
-  if ((offset % S_NODE_SIZE) != 0) {
-    return nullptr;
-  }
-  return readNode(offset);
-}
 
 /*
  *
  */
-void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
+void TreeSerializer::writeMetadata(S_MetaData *metadata) {
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
   ol.Offset = 0;
   ol.OffsetHigh = 0;
   DWORD bytes;
-  if (!WriteFile(hf, metadata, sizeof(tier_offsets), &bytes, &ol)) {
+  if (!WriteFile(hf, metadata, sizeof(metadata), &bytes, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
       printf("Err: %ld\n", err);
@@ -191,7 +187,7 @@ void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
     }
   }
 #else
-  ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(tier_offsets), 0);
+  ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(metadata), 0);
 #endif
   if (bytes <= 0)
     std::cout << "[ERROR]: Could not write metadata\n[MESSAGE]: " +
@@ -199,15 +195,15 @@ void TreeSerializer::write_offset_metadata(tier_offsets *metadata) {
               << std::endl;
 }
 
-tier_offsets *TreeSerializer::read_offset_metadata() {
-  tier_offsets *metadata = new tier_offsets();
+S_MetaData *TreeSerializer::readMetadata() {
+  S_MetaData *metadata = new S_MetaData();
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
   ol.Offset = 0;
   ol.OffsetHigh = 0;
   DWORD bytes;
-  if (!ReadFile(hf, metadata, sizeof(tier_offsets), &bytes, &ol)) {
+  if (!ReadFile(hf, metadata, sizeof(S_MetaData), &bytes, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
       printf("Err: %ld\n", err);
@@ -220,7 +216,7 @@ tier_offsets *TreeSerializer::read_offset_metadata() {
     }
   }
 #else
-  ssize_t bytes = pread(fd, (char *)metadata, sizeof(tier_offsets), 0);
+  ssize_t bytes = pread(fd, (char *)metadata, sizeof(S_MetaData), 0);
 #endif
   if (bytes <= 0) {
     std::cout << "[ERROR]: Could not read metadata\n[MESSAGE]: " +
