@@ -1,7 +1,7 @@
 #include "algorithm.hpp"
 
 bool s_dfs(Tree *tree, int offset, int &key) {
-  S_Node *s_node = tree->read_from_TS(offset);
+  S_Node *s_node = tree->read_snode(offset);
   if (s_node->key == key)
     return true;
   for (int i = 0; i < s_node->numChildren; i++) {
@@ -16,7 +16,7 @@ bool s_dfs_2(Tree *tree, int &key) {
   frontier.push_back(0);
 
   while (!frontier.empty()) {
-    S_Node *s_node = tree->read_from_TS(frontier.back());
+    S_Node *s_node = tree->read_snode(frontier.back());
 
     if (s_node->key == key)
       return true;
@@ -37,7 +37,7 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
     if (isFound) {
       break;
     }
-    S_Node *s_node = tree->read_from_TS(frontier.back());
+    S_Node *s_node = tree->read_snode(frontier.back());
 
     if (s_node->key == key) {
       isFound = true;
@@ -81,7 +81,7 @@ bool p_dfs_omp(Tree *tree, int &key, int f_size) {
 }
 
 bool s_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_from_TS(offset);
+  S_Node *s_node = tree->read_snode(offset);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
@@ -167,7 +167,7 @@ bool s_bfs(Tree *tree, int &key) {
   int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
     for (size_t i = 0; i < frontier.size(); i++) {
-      S_Node *s_node = tree->read_from_TS(frontier[i]);
+      S_Node *s_node = tree->read_snode(frontier[i]);
       rfCnt++;
       if (s_node->key == key)
         isFound = true;
@@ -196,7 +196,7 @@ bool p_bfs_omp(Tree *tree, int &key) {
     {
 #pragma omp for nowait
       for (size_t i = 0; i < frontier.size(); i++) {
-        S_Node *s_node = tree->read_from_TS(frontier[i]);
+        S_Node *s_node = tree->read_snode(frontier[i]);
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
@@ -215,7 +215,7 @@ bool p_bfs_omp(Tree *tree, int &key) {
 }
 
 bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_from_TS(offset);
+  S_Node *s_node = tree->read_snode(offset);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
@@ -255,7 +255,7 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres) {
     {
 #pragma omp for nowait
       for (size_t i = 0; i < frontier.size(); i++) {
-        S_Node *s_node = tree->read_from_TS(frontier[i]);
+        S_Node *s_node = tree->read_snode(frontier[i]);
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
@@ -295,7 +295,7 @@ bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize) {
     {
 #pragma omp for nowait
       for (size_t i = 0; i < frontier.size(); i++) {
-        S_Node *s_node = tree->read_from_TS(frontier[i]);
+        S_Node *s_node = tree->read_snode(frontier[i]);
         rfCnt++;
         if (s_node->key == key)
           isFound = true;

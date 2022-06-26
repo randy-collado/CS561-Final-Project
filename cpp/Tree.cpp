@@ -45,10 +45,23 @@ void Tree::seq_fill(long numInserts, std::vector<int> &keys,
   }
 }
 
-S_Node *Tree::read_from_TS(int offset) {
+// Change to number = offset / S_NODE_SIZE?
+S_Node *Tree::read_snode(int offset) {
   S_Node *s_node = TS.readNodeFromOffset(offset);
   return s_node;
 }
+
+S_MetaData* Tree::read_smetadata(){
+  S_MetaData *s_metadata = TS.readMetadata();
+  return s_metadata;
+}
+
+void Tree::init_metadata(){
+  S_MetaData* sm = read_smetadata();
+  branch = sm->maxBranch;
+  nodeCount = sm->cntNode;
+}
+
 
 void Tree::add_impl(int key, int value) {
   if (head == nullptr) {

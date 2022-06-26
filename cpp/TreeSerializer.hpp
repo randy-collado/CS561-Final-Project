@@ -9,6 +9,7 @@
 #pragma once
 
 #define S_NODE_SIZE 512
+#define S_METADATA_SIZE 512
 
 enum MODE { READ, WRITE, INVALID };
 
@@ -40,7 +41,7 @@ public:
 
   void writeNodeWithOffset(S_Node *node, int offset);
   S_Node *readNodeFromOffset(size_t offset);
-  
+
   void openFile(std::string filepath, MODE mode);
   
 
@@ -50,6 +51,7 @@ private:
 #else
   int fd;
 #endif
+
   MODE mode_internal;
   bool at_eof;
 };

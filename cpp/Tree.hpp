@@ -37,6 +37,7 @@ public:
   ~Tree() {}
 
   void init_serializer(std::string filename, int rw);
+  void init_metadata();
 
   void fill(long numInserts, long upperBound, std::vector<int> &keys,
             std::vector<int> &values);
@@ -52,7 +53,8 @@ public:
 
   size_t get_max_level() { return maxLevel; }
 
-  S_Node *read_from_TS(int offset);
+  S_Node *read_snode(int offset);
+  S_MetaData* read_smetadata();
 
   size_t nodeCount;
 
@@ -66,10 +68,7 @@ private:
   S_Node *node_to_snode(Node *node);
   S_Node *node_to_aligned_snode(Node *node);
 
-  // Node *snode_to_node(S_Node *s_node);
-
   Node *head;
-
   size_t branch;
   size_t maxLevel;
   TreeSerializer TS;
