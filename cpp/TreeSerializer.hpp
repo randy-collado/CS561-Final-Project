@@ -27,7 +27,7 @@ struct S_Node {
 } __attribute__((aligned(512))); // GCC extension to align a struct
 
 struct S_MetaData {
-  int cntNode;
+  int nodeCount;
   int maxBranch;
 } __attribute__((aligned(512)));
 

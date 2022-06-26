@@ -20,7 +20,7 @@ void Tree::dump_tree() {
 #else
   S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(512, sizeof(S_MetaData));
 #endif
-  s_metadata->cntNode = nodeCount;
+  s_metadata->nodeCount = nodeCount;
   s_metadata->maxBranch = branch;
   TS.writeMetadata(s_metadata);
   // Dump node recursively
@@ -71,7 +71,7 @@ S_MetaData* Tree::read_smetadata(){
 void Tree::init_metadata(){
   S_MetaData* sm = read_smetadata();
   branch = sm->maxBranch;
-  nodeCount = sm->cntNode;
+  nodeCount = sm->nodeCount;
 }
 
 

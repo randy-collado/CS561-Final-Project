@@ -74,7 +74,7 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
     exit(1);
   }
 
-  offset += S_METADATA_SIZE;
+  offset += sizeof(S_MetaData);
 
 #ifdef _WIN32
   OVERLAPPED ol;
@@ -124,7 +124,7 @@ S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
     return nullptr;
   }
   
-  offset += S_METADATA_SIZE;
+  offset += sizeof(S_MetaData);
 
   S_Node *node = new S_Node();
 #ifdef _WIN32
