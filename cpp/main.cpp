@@ -8,8 +8,8 @@
 #include <vector>
 
 int main(int argc, char **argv) {
-  if (argc < 4) {
-    std::cerr << "[ERROR]: Usage is ./main <filepath> <targetKey> <numNode>"
+  if (argc < 2) {
+    std::cerr << "[ERROR]: Usage is ./main <filepath>"
               << std::endl;
     exit(1);
   }
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < 21; i++) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, std::stoi(argv[3]));
+    std::uniform_int_distribution<> distrib(0, tree.nodeCount);
 
     int targetKey = distrib(gen);
     if (i == 20) {

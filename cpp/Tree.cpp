@@ -13,7 +13,19 @@ void Tree::init_serializer(std::string filename, int rw) {
   }
 }
 
-void Tree::dump_tree() { dump_tree_impl(this->head); }
+void Tree::dump_tree() {
+  // Dump metadata
+#ifdef _WIN32
+  S_MetaData *s_metadata = (S_MetaData *)_aligned_malloc(sizeof(S_MetaData), 512);
+#else
+  S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(512, sizeof(S_MetaData));
+#endif
+  s_metadata->cntNode = nodeCount;
+  s_metadata->maxBranch = branch;
+  TS.writeMetadata(s_metadata);
+  // Dump node recursively
+  dump_node(this->head);
+}
 
 void Tree::add(int key, int value) { add_impl(key, value); }
 
@@ -142,7 +154,7 @@ void Tree::add_impl(int key, int value) {
   // }
 }
 
-void Tree::dump_tree_impl(Node *head) {
+void Tree::dump_node(Node *head) {
   if (!ts_init) {
     std::cerr << "[ERROR] Serializer was not initialized" << std::endl;
     exit(1);
@@ -155,7 +167,7 @@ void Tree::dump_tree_impl(Node *head) {
 
 #pragma omp parallel for
   for (size_t i = 0; i < head->numChildren; i++) {
-    dump_tree_impl(head->children[i]);
+    dump_node(head->children[i]);
   }
 
   // std::deque<Node *> queue = std::deque<Node *>();

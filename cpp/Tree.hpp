@@ -61,9 +61,7 @@ public:
 private:
   void add_impl(int key, int value);
 
-  void dump_tree_impl(Node *head);
-
-  void dump_tree_tiered_impl(Node *head);
+  void dump_node(Node *head);
 
   S_Node *node_to_snode(Node *node);
   S_Node *node_to_aligned_snode(Node *node);

@@ -179,20 +179,20 @@ void TreeSerializer::writeMetadata(S_MetaData *metadata) {
   ol.Offset = 0;
   ol.OffsetHigh = 0;
   DWORD bytes;
-  if (!WriteFile(hf, metadata, sizeof(metadata), &bytes, &ol)) {
+  if (!WriteFile(hf, metadata, sizeof(S_MetaData), &bytes, &ol)) {
     auto err = GetLastError();
     if (err != ERROR_IO_PENDING) {
-      printf("Err: %ld\n", err);
+      printf("writeMetadata Err 1: %ld\n", err);
       exit(1);
     } else {
       if (!GetOverlappedResult(hf, &ol, &bytes, TRUE)) {
-        printf("Err: %ld\n", err);
+        printf("writeMetadata Err 2: %ld\n", err);
         exit(1);
       }
     }
   }
 #else
-  ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(metadata), 0);
+  ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(S_MetaData), 0);
 #endif
   if (bytes <= 0)
     std::cout << "[ERROR]: Could not write metadata\n[MESSAGE]: " +
