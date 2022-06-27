@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
   if (argc < 4) {
-    std::cerr << "[ERROR]: Usage is ./generator <filepath> <num_elements> <branch> "
+    std::cerr << "[ERROR]: Usage is ./generator <data_path> <num_elements> <branch> "
               << std::endl;
     exit(1);
   }

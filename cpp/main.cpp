@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    std::cerr << "[ERROR]: Usage is ./main <filepath>"
+    std::cerr << "[ERROR]: Usage is ./main <data_path>"
               << std::endl;
     exit(1);
   }
