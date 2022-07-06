@@ -1,4 +1,4 @@
-#include "TreeSerializer.hpp"
+#include "Serializer.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -13,18 +13,18 @@
 
 #pragma once
 
-struct Node {
-  Node(size_t branchingFactor)
-      : maxChildren(branchingFactor), numChildren(0),
+struct TreeNode {
+  TreeNode(size_t branchingFactor)
+      : maxChildren(branchingFactor), childrenCount(0),
         maxValues(branchingFactor), numValues(0), level(0), key(-1) {}
   size_t maxChildren;
-  size_t numChildren;
+  size_t childrenCount;
   size_t maxValues;
   size_t numValues;
   size_t level;
   int key;
   int values[8];
-  Node *children[8];
+  TreeNode *children[8];
   int number;
 };
 
@@ -49,7 +49,7 @@ public:
 
   void dump_tree();
 
-  const Node *get_head_ref() { return head; }
+  const TreeNode *get_head_ref() { return head; }
 
   size_t get_max_level() { return maxLevel; }
 
@@ -61,14 +61,14 @@ public:
 private:
   void add_impl(int key, int value);
 
-  void dump_node(Node *head);
+  void dump_node(TreeNode *head);
 
-  S_Node *node_to_snode(Node *node);
-  S_Node *node_to_aligned_snode(Node *node);
+  S_Node *node_to_snode(TreeNode *node);
+  S_Node *node_to_aligned_snode(TreeNode *node);
 
-  Node *head;
+  TreeNode *head;
   size_t branch;
   size_t maxLevel;
-  TreeSerializer TS;
+  Serializer TS;
   bool ts_init;
 };

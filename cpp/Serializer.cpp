@@ -1,15 +1,15 @@
-#include "TreeSerializer.hpp"
+#include "Serializer.hpp"
 #include "Tree.hpp"
 
 #define align(p, a) (((long)(p) + (a - 1)) & ~(a - 1))
 
-TreeSerializer::TreeSerializer() : mode_internal(MODE::INVALID), at_eof(false) {
+Serializer::Serializer() : mode_internal(MODE::INVALID), at_eof(false) {
 #ifndef _WIN32
   fd = -1;
 #endif
 }
 
-TreeSerializer::~TreeSerializer() {
+Serializer::~Serializer() {
 #ifdef _WIN32
   CloseHandle(hf);
 #else
@@ -17,7 +17,7 @@ TreeSerializer::~TreeSerializer() {
 #endif
 }
 
-void TreeSerializer::openFile(std::string filepath, MODE mode) {
+void Serializer::openFile(std::string filepath, MODE mode) {
 #ifdef _WIN32
   DWORD dwflags =
       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED;
@@ -66,7 +66,7 @@ void TreeSerializer::openFile(std::string filepath, MODE mode) {
 #endif
 }
 
-void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
+void Serializer::writeNodeWithOffset(S_Node *node, int offset) {
   if (mode_internal == MODE::READ || mode_internal == MODE::INVALID) {
     std::cerr << "[ERROR]: Serializer in an invalid state\n[REASON]: Must be "
                  "initialized to write mode via MODE::WRITE"
@@ -114,7 +114,7 @@ void TreeSerializer::writeNodeWithOffset(S_Node *node, int offset) {
  * Might be useful to allow this to return pointers to individual members of a
  * struct, but casting might be needed in this case
  */
-S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
+S_Node *Serializer::readNodeFromOffset(size_t offset) {
   if ((offset % S_NODE_SIZE) != 0) {
     return nullptr;
   }
@@ -157,7 +157,7 @@ S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
   // ssize_t bytes = pread(fd, buf, sizeof(S_Node), offset);
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), offset);
   // node = (S_Node*) buf;
-  // std::cout << "Read Node" << " Offset " << offset << " Key: " << node->key
+  // std::cout << "Read TreeNode" << " Offset " << offset << " Key: " << node->key
   // << " +++" << std::endl;
 #endif
   if (bytes <= 0) {
@@ -172,7 +172,7 @@ S_Node *TreeSerializer::readNodeFromOffset(size_t offset) {
 /*
  *
  */
-void TreeSerializer::writeMetadata(S_MetaData *metadata) {
+void Serializer::writeMetadata(S_MetaData *metadata) {
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -200,7 +200,7 @@ void TreeSerializer::writeMetadata(S_MetaData *metadata) {
               << std::endl;
 }
 
-S_MetaData *TreeSerializer::readMetadata() {
+S_MetaData *Serializer::readMetadata() {
   S_MetaData *metadata = new S_MetaData();
 #ifdef _WIN32
   OVERLAPPED ol;
@@ -232,4 +232,4 @@ S_MetaData *TreeSerializer::readMetadata() {
   return metadata;
 }
 
-// size_t TreeSerializer::get_current_offset() { return offset; }
+// size_t Serializer::get_current_offset() { return offset; }

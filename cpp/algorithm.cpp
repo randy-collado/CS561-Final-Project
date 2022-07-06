@@ -4,8 +4,8 @@ bool s_dfs(Tree *tree, int offset, int &key) {
   S_Node *s_node = tree->read_snode(offset);
   if (s_node->key == key)
     return true;
-  for (int i = 0; i < s_node->numChildren; i++) {
-    if (s_dfs(tree, s_node->children[i], key))
+  for (int i = 0; i < s_node->edgeCount; i++) {
+    if (s_dfs(tree, s_node->edges[i], key))
       return true;
   }
   return false;
@@ -23,8 +23,8 @@ bool s_dfs_2(Tree *tree, int &key) {
 
     frontier.pop_back();
 
-    frontier.insert(frontier.end(), s_node->children,
-                    s_node->children + s_node->numChildren);
+    frontier.insert(frontier.end(), s_node->edges,
+                    s_node->edges + s_node->edgeCount);
   }
   return false;
 }
@@ -46,8 +46,8 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
 
     frontier.pop_back();
 
-    frontier.insert(frontier.end(), s_node->children,
-                    s_node->children + s_node->numChildren);
+    frontier.insert(frontier.end(), s_node->edges,
+                    s_node->edges + s_node->edgeCount);
     while (frontier.size() > fSize) {
       if (isFound)
         break;
@@ -86,8 +86,8 @@ bool s_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
     return true;
   if (depLeft == 0)
     return false;
-  for (int i = 0; i < s_node->numChildren; i++) {
-    if (s_iddfs_worker(tree, s_node->children[i], key, depLeft - 1))
+  for (int i = 0; i < s_node->edgeCount; i++) {
+    if (s_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1))
       return true;
   }
   return false;
@@ -103,7 +103,7 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
   return false;
 }
 
-// void p_dfs(Node *curNode, int key, bool *isFound, std::queue<Node *> *nodeQ)
+// void p_dfs(TreeNode *curNode, int key, bool *isFound, std::queue<TreeNode *> *nodeQ)
 // {
 //   while (1) {
 //     // std::cout << curNode << " " << curNode->key << std::endl;
@@ -113,17 +113,17 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
 //       *isFound = true;
 //       return;
 //     }
-//     for (size_t i = 1; i < curNode->numChildren; i++) {
-//       (*nodeQ).push(curNode->children[i]);
+//     for (size_t i = 1; i < curNode->edgeCount; i++) {
+//       (*nodeQ).push(curNode->edges[i]);
 //     }
-//     if (curNode->numChildren >= 1) {
-//       curNode = curNode->children[0];
+//     if (curNode->edgeCount >= 1) {
+//       curNode = curNode->edges[0];
 //     } else
 //       break;
 //   }
 // }
 
-// void p_bfs(Node *curNode, int key, bool *isFound, std::queue<Node *>
+// void p_bfs(TreeNode *curNode, int key, bool *isFound, std::queue<TreeNode *>
 // *nodeQ)
 // {
 //   // std::cout << curNode << " " << curNode->key << std::endl;
@@ -133,20 +133,20 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
 //     *isFound = true;
 //     return;
 //   }
-//   for (size_t i = 0; i < curNode->numChildren; i++) {
-//     (*nodeQ).push(curNode->children[i]);
+//   for (size_t i = 0; i < curNode->edgeCount; i++) {
+//     (*nodeQ).push(curNode->edges[i]);
 //   }
 // }
 
-// void p_sche(Node *root, int type, int key) {
+// void p_sche(TreeNode *root, int type, int key) {
 //   bool isFound = false;
-//   std::queue<Node *> nodeQ;
+//   std::queue<TreeNode *> nodeQ;
 //   nodeQ.push(root);
 //   while (1) {
 //     if (isFound)
 //       break;
 //     if (!nodeQ.empty()) {
-//       Node *t = nodeQ.front();
+//       TreeNode *t = nodeQ.front();
 //       nodeQ.pop();
 //       if (type == 0) {
 //         std::async(p_bfs, t, key, &isFound, &nodeQ);
@@ -171,10 +171,10 @@ bool s_bfs(Tree *tree, int &key) {
       rfCnt++;
       if (s_node->key == key)
         isFound = true;
-      if (isFound || s_node->numChildren == 0)
+      if (isFound || s_node->edgeCount == 0)
         continue;
-      next.insert(next.end(), s_node->children,
-                  s_node->children + s_node->numChildren);
+      next.insert(next.end(), s_node->edges,
+                  s_node->edges + s_node->edgeCount);
     }
     frontier = next;
     next.clear();
@@ -200,11 +200,11 @@ bool p_bfs_omp(Tree *tree, int &key) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->numChildren == 0)
+        if (isFound || s_node->edgeCount == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->children,
-                    s_node->children + s_node->numChildren);
+        next.insert(next.end(), s_node->edges,
+                    s_node->edges + s_node->edgeCount);
       }
     }
     frontier = next;
@@ -223,10 +223,10 @@ bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
 
   bool isFound = false;
 // #pragma omp parallel for
-  for (int i = 0; i < s_node->numChildren; i++) {
+  for (int i = 0; i < s_node->edgeCount; i++) {
     if (isFound)
       continue;
-    isFound |= p_iddfs_worker(tree, s_node->children[i], key, depLeft - 1);
+    isFound |= p_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1);
   }
   return isFound;
 }
@@ -259,18 +259,18 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->numChildren == 0)
+        if (isFound || s_node->edgeCount == 0)
           continue;
-        if (s_node->numChildren > brhThres) {
+        if (s_node->edgeCount > brhThres) {
 #pragma omp critical
-          next.insert(next.end(), s_node->children,
-                      s_node->children + s_node->numChildren);
+          next.insert(next.end(), s_node->edges,
+                      s_node->edges + s_node->edgeCount);
         } else {
 #pragma omp parallel for
-          for (int i = 0; i < s_node->numChildren; i++) {
+          for (int i = 0; i < s_node->edgeCount; i++) {
             if (isFound)
               continue;
-            isFound |= p_hybrid_omp(tree, s_node->children[i], key, brhThres);
+            isFound |= p_hybrid_omp(tree, s_node->edges[i], key, brhThres);
           }
         }
       }
@@ -299,11 +299,11 @@ bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->numChildren == 0)
+        if (isFound || s_node->edgeCount == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->children,
-                    s_node->children + s_node->numChildren);
+        next.insert(next.end(), s_node->edges,
+                    s_node->edges + s_node->edgeCount);
       }
     }
     frontier = next;

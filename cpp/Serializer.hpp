@@ -13,28 +13,29 @@
 
 enum MODE { READ, WRITE, INVALID };
 
-struct dummy_node {
-  int x;
-  int y;
-  int z;
-};
-
 struct S_Node {
   int key;
-  int numChildren;
+  int edgeCount;
   int payloads[8];
-  int children[8];               // offset of children nodes
+  int edges[54];                 // offset of neighbor nodes
+} __attribute__((aligned(512))); // GCC extension to align a struct
+
+struct S_Node_2 {
+  int key;
+  int edgeCount;
+  int payloads[8];
+  int edges[118];                // offset of neighbor nodes
 } __attribute__((aligned(512))); // GCC extension to align a struct
 
 struct S_MetaData {
   int nodeCount;
-  int maxBranch;
+  int maxDegree;
 } __attribute__((aligned(512)));
 
-class TreeSerializer {
+class Serializer {
 public:
-  TreeSerializer();
-  ~TreeSerializer();
+  Serializer();
+  ~Serializer();
 
   void writeMetadata(S_MetaData *metadata);
   S_MetaData *readMetadata();
@@ -43,7 +44,6 @@ public:
   S_Node *readNodeFromOffset(size_t offset);
 
   void openFile(std::string filepath, MODE mode);
-  
 
 private:
 #ifdef _WIN32
@@ -51,7 +51,6 @@ private:
 #else
   int fd;
 #endif
-
   MODE mode_internal;
   bool at_eof;
 };
