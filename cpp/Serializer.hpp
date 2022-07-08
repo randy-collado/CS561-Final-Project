@@ -39,10 +39,7 @@ public:
   S_MetaData *readMetadata();
 
   bool writeNode(S_Node *node, int number);
-  bool writeNodeWithOffset(S_Node *node, size_t offset);
-
   S_Node *readNode(int number);
-  S_Node *readNodeFromOffset(size_t offset);
 
   void openFile(std::string filepath, MODE mode);
 
@@ -54,4 +51,6 @@ private:
 #endif
   MODE mode_internal;
   bool at_eof;
+  S_Node *readNodeFromOffset(size_t offset);
+  bool writeNodeWithOffset(S_Node *node, size_t offset);
 };

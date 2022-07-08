@@ -162,7 +162,7 @@ void Tree::dump_node(TreeNode *root) {
     return;
 
   auto s_node = node_to_aligned_snode(root);
-  TS.writeNodeWithOffset(s_node, 512 * root->number);
+  TS.writeNode(s_node, root->number);
 
 #pragma omp parallel for
   for (size_t i = 0; i < root->degree; i++) {
