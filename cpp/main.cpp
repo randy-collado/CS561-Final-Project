@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < 21; i++) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, tree.nodeCount);
+    std::uniform_int_distribution<> distrib(0, tree.numNode);
 
     int targetKey = distrib(gen);
     if (i == 20) {

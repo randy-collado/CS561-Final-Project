@@ -20,11 +20,11 @@ void Tree::dump_tree() {
 #else
   S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(512, sizeof(S_MetaData));
 #endif
-  s_metadata->nodeCount = nodeCount;
+  s_metadata->numNode = numNode;
   s_metadata->maxDegree = branch;
   TS.writeMetadata(s_metadata);
   // Dump node recursively
-  dump_node(this->head);
+  dump_node(this->root);
 }
 
 void Tree::add(int key, int value) { add_impl(key, value); }
@@ -57,9 +57,8 @@ void Tree::seq_fill(long numInserts, std::vector<int> &keys,
   }
 }
 
-// Change to number = offset / S_NODE_SIZE?
-S_Node *Tree::read_snode(int offset) {
-  S_Node *s_node = TS.readNodeFromOffset(offset);
+S_Node *Tree::read_snode(int number) {
+  S_Node *s_node = TS.readNode(number);
   return s_node;
 }
 
@@ -71,24 +70,24 @@ S_MetaData* Tree::read_smetadata(){
 void Tree::init_metadata(){
   S_MetaData* sm = read_smetadata();
   branch = sm->maxDegree;
-  nodeCount = sm->nodeCount;
+  numNode = sm->numNode;
 }
 
 
 void Tree::add_impl(int key, int value) {
-  if (head == nullptr) {
-    head = new TreeNode(branch);
-    head->number = nodeCount++;
-    head->key = key;
-    head->values[head->numValues++] = value;
-    head->level = 0;
+  if (root == nullptr) {
+    root = new TreeNode(branch);
+    root->number = numNode++;
+    root->key = key;
+    root->values[root->numValues++] = value;
+    root->level = 0;
     return;
   }
 
   std::vector<TreeNode *> frontier;
   std::vector<TreeNode *> next;
 
-  frontier.push_back(head);
+  frontier.push_back(root);
 
   while (frontier.size() > 0) {
     for (size_t i = 0; i < frontier.size(); i++) {
@@ -97,20 +96,20 @@ void Tree::add_impl(int key, int value) {
         if (curNode->numValues < curNode->maxValues)
           curNode->values[curNode->numValues++] = value;
         return;
-      } else if (curNode->childrenCount < curNode->maxChildren) {
+      } else if (curNode->degree < curNode->maxDegree) {
         TreeNode *node = new TreeNode(branch);
-        node->number = nodeCount++;
+        node->number = numNode++;
         node->key = key;
         node->values[node->numValues++] = value;
         node->level = curNode->level + 1;
         if (node->level > maxLevel) {
           maxLevel = node->level;
         }
-        curNode->children[curNode->childrenCount++] = node;
+        curNode->children[curNode->degree++] = node;
         return;
       }
       std::vector<TreeNode *> next_private(
-          curNode->children, curNode->children + curNode->childrenCount);
+          curNode->children, curNode->children + curNode->degree);
       next.insert(next.end(), next_private.begin(), next_private.end());
     }
     frontier = next;
@@ -118,15 +117,15 @@ void Tree::add_impl(int key, int value) {
   }
 
   // std::deque<TreeNode *> queue = std::deque<TreeNode *>();
-  // if (head == nullptr) {
-  //   head = new TreeNode(branch);
-  //   head->number = nodeCount++;
-  //   head->key = key;
-  //   head->values[head->numValues++] = value;
-  //   head->level = 0;
+  // if (root == nullptr) {
+  //   root = new TreeNode(branch);
+  //   root->number = numNode++;
+  //   root->key = key;
+  //   root->values[root->numValues++] = value;
+  //   root->level = 0;
   //   return;
   // }
-  // queue.push_back(head);
+  // queue.push_back(root);
   // while (!queue.empty()) {
   //   TreeNode *currentNode = queue.front();
   //   queue.pop_front();
@@ -136,42 +135,42 @@ void Tree::add_impl(int key, int value) {
   //     if (currentNode->numValues < currentNode->maxValues)
   //       currentNode->values[currentNode->numValues++] = value;
   //     return;
-  //   } else if (currentNode->edgeCount < branch) {
+  //   } else if (currentNode->degree < branch) {
   //     TreeNode *node = new TreeNode(branch);
-  //     node->number = nodeCount++;
+  //     node->number = numNode++;
   //     node->key = key;
   //     node->values[node->numValues++] = value;
   //     node->level = currentNode->level + 1;
   //     if (node->level > maxLevel) {
   //       maxLevel = node->level;
   //     }
-  //     currentNode->edges[currentNode->edgeCount++] = node;
+  //     currentNode->edges[currentNode->degree++] = node;
   //     return;
   //   } else {
   //     queue.insert(queue.end(), currentNode->edges,
-  //                  currentNode->edges + currentNode->edgeCount);
+  //                  currentNode->edges + currentNode->degree);
   //   }
   // }
 }
 
-void Tree::dump_node(TreeNode *head) {
+void Tree::dump_node(TreeNode *root) {
   if (!ts_init) {
     std::cerr << "[ERROR] Serializer was not initialized" << std::endl;
     exit(1);
   }
-  if (!head)
+  if (!root)
     return;
 
-  auto s_node_ptr = node_to_aligned_snode(head);
-  TS.writeNodeWithOffset(s_node_ptr, 512 * head->number);
+  auto s_node = node_to_aligned_snode(root);
+  TS.writeNodeWithOffset(s_node, 512 * root->number);
 
 #pragma omp parallel for
-  for (size_t i = 0; i < head->childrenCount; i++) {
-    dump_node(head->children[i]);
+  for (size_t i = 0; i < root->degree; i++) {
+    dump_node(root->children[i]);
   }
 
   // std::deque<TreeNode *> queue = std::deque<TreeNode *>();
-  // queue.push_back(head);
+  // queue.push_back(root);
 
   // while (!queue.empty()) {
   //   TreeNode *currentNode = queue.front();
@@ -185,7 +184,7 @@ void Tree::dump_node(TreeNode *head) {
   //   TS.writeNodeWithOffset(s_node_ptr, 512 * currentNode->number);
 
   //   queue.insert(queue.end(), currentNode->edges,
-  //                currentNode->edges + currentNode->edgeCount);
+  //                currentNode->edges + currentNode->degree);
   // }
 }
 
@@ -193,12 +192,12 @@ S_Node *Tree::node_to_snode(
     TreeNode *node) { // returns a pointer declared by new, user should delete
   S_Node *s_node = new S_Node();
   s_node->key = node->key;
-  s_node->edgeCount = node->childrenCount;
+  s_node->degree = node->degree;
 
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
-  for (size_t i = 0; i < node->childrenCount; ++i) {
-    s_node->edges[i] = 512 * node->children[i]->number;
+  for (size_t i = 0; i < node->degree; ++i) {
+    s_node->edges[i] = node->children[i]->number;
   }
   return s_node;
 }
@@ -211,12 +210,12 @@ S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
 #endif
 
   s_node->key = node->key;
-  s_node->edgeCount = node->childrenCount;
+  s_node->degree = node->degree;
 
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
-  for (size_t i = 0; i < node->childrenCount; ++i) {
-    s_node->edges[i] = 512 * node->children[i]->number;
+  for (size_t i = 0; i < node->degree; ++i) {
+    s_node->edges[i] = node->children[i]->number;
   }
   return s_node;
 }

@@ -66,15 +66,19 @@ void Serializer::openFile(std::string filepath, MODE mode) {
 #endif
 }
 
-void Serializer::writeNodeWithOffset(S_Node *node, int offset) {
+bool Serializer::writeNode(S_Node *node, int number) {
+  size_t offset = sizeof(S_MetaData);
+  offset += number * sizeof(S_Node);
+  return writeNodeWithOffset(node, offset);
+}
+
+bool Serializer::writeNodeWithOffset(S_Node *node, size_t offset) {
   if (mode_internal == MODE::READ || mode_internal == MODE::INVALID) {
     std::cerr << "[ERROR]: Serializer in an invalid state\n[REASON]: Must be "
                  "initialized to write mode via MODE::WRITE"
               << std::endl;
     exit(1);
   }
-
-  offset += sizeof(S_MetaData);
 
 #ifdef _WIN32
   OVERLAPPED ol;
@@ -104,9 +108,16 @@ void Serializer::writeNodeWithOffset(S_Node *node, int offset) {
     std::cout << "[ERROR]: Could not write\n[MESSAGE]: " +
                      std::string(strerror(errno))
               << std::endl;
-    return;
+    return false;
   }
+  return true;
 }
+S_Node *Serializer::readNode(int number) {
+  size_t offset = sizeof(S_MetaData);
+  offset += number * sizeof(S_Node);
+  return readNodeFromOffset(offset);
+}
+
 /*
  * The parameters of this function should be a multiple of 512, the size of a
  * node. Will return nullptr if the offset is not 512-byte aligned.
@@ -123,8 +134,6 @@ S_Node *Serializer::readNodeFromOffset(size_t offset) {
               << std::endl;
     return nullptr;
   }
-  
-  offset += sizeof(S_MetaData);
 
   S_Node *node = new S_Node();
 #ifdef _WIN32
@@ -157,7 +166,8 @@ S_Node *Serializer::readNodeFromOffset(size_t offset) {
   // ssize_t bytes = pread(fd, buf, sizeof(S_Node), offset);
   ssize_t bytes = pread(fd, (char *)node, sizeof(S_Node), offset);
   // node = (S_Node*) buf;
-  // std::cout << "Read TreeNode" << " Offset " << offset << " Key: " << node->key
+  // std::cout << "Read TreeNode" << " Offset " << offset << " Key: " <<
+  // node->key
   // << " +++" << std::endl;
 #endif
   if (bytes <= 0) {
@@ -172,7 +182,7 @@ S_Node *Serializer::readNodeFromOffset(size_t offset) {
 /*
  *
  */
-void Serializer::writeMetadata(S_MetaData *metadata) {
+bool Serializer::writeMetadata(S_MetaData *metadata) {
 #ifdef _WIN32
   OVERLAPPED ol;
   ol.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -194,10 +204,13 @@ void Serializer::writeMetadata(S_MetaData *metadata) {
 #else
   ssize_t bytes = pwrite(fd, (char *)metadata, sizeof(S_MetaData), 0);
 #endif
-  if (bytes <= 0)
+  if (bytes <= 0) {
     std::cout << "[ERROR]: Could not write metadata\n[MESSAGE]: " +
                      std::string(strerror(errno))
               << std::endl;
+    return false;
+  }
+  return true;
 }
 
 S_MetaData *Serializer::readMetadata() {
@@ -231,5 +244,3 @@ S_MetaData *Serializer::readMetadata() {
   }
   return metadata;
 }
-
-// size_t Serializer::get_current_offset() { return offset; }

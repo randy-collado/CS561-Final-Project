@@ -1,10 +1,10 @@
 #include "algorithm.hpp"
 
-bool s_dfs(Tree *tree, int offset, int &key) {
-  S_Node *s_node = tree->read_snode(offset);
+bool s_dfs(Tree *tree, int number, int &key) {
+  S_Node *s_node = tree->read_snode(number);
   if (s_node->key == key)
     return true;
-  for (int i = 0; i < s_node->edgeCount; i++) {
+  for (auto i = 0; i < s_node->degree; i++) {
     if (s_dfs(tree, s_node->edges[i], key))
       return true;
   }
@@ -24,7 +24,7 @@ bool s_dfs_2(Tree *tree, int &key) {
     frontier.pop_back();
 
     frontier.insert(frontier.end(), s_node->edges,
-                    s_node->edges + s_node->edgeCount);
+                    s_node->edges + s_node->degree);
   }
   return false;
 }
@@ -47,7 +47,7 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
     frontier.pop_back();
 
     frontier.insert(frontier.end(), s_node->edges,
-                    s_node->edges + s_node->edgeCount);
+                    s_node->edges + s_node->degree);
     while (frontier.size() > fSize) {
       if (isFound)
         break;
@@ -80,13 +80,13 @@ bool p_dfs_omp(Tree *tree, int &key, int f_size) {
   return isFound;
 }
 
-bool s_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_snode(offset);
+bool s_iddfs_worker(Tree *tree, int number, int &key, size_t depLeft) {
+  S_Node *s_node = tree->read_snode(number);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
     return false;
-  for (int i = 0; i < s_node->edgeCount; i++) {
+  for (int i = 0; i < s_node->degree; i++) {
     if (s_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1))
       return true;
   }
@@ -103,7 +103,8 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
   return false;
 }
 
-// void p_dfs(TreeNode *curNode, int key, bool *isFound, std::queue<TreeNode *> *nodeQ)
+// void p_dfs(TreeNode *curNode, int key, bool *isFound, std::queue<TreeNode *>
+// *nodeQ)
 // {
 //   while (1) {
 //     // std::cout << curNode << " " << curNode->key << std::endl;
@@ -113,10 +114,10 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
 //       *isFound = true;
 //       return;
 //     }
-//     for (size_t i = 1; i < curNode->edgeCount; i++) {
+//     for (size_t i = 1; i < curNode->degree; i++) {
 //       (*nodeQ).push(curNode->edges[i]);
 //     }
-//     if (curNode->edgeCount >= 1) {
+//     if (curNode->degree >= 1) {
 //       curNode = curNode->edges[0];
 //     } else
 //       break;
@@ -133,7 +134,7 @@ bool s_iddfs(Tree *tree, int &key, size_t maxDepth) {
 //     *isFound = true;
 //     return;
 //   }
-//   for (size_t i = 0; i < curNode->edgeCount; i++) {
+//   for (size_t i = 0; i < curNode->degree; i++) {
 //     (*nodeQ).push(curNode->edges[i]);
 //   }
 // }
@@ -171,10 +172,9 @@ bool s_bfs(Tree *tree, int &key) {
       rfCnt++;
       if (s_node->key == key)
         isFound = true;
-      if (isFound || s_node->edgeCount == 0)
+      if (isFound || s_node->degree == 0)
         continue;
-      next.insert(next.end(), s_node->edges,
-                  s_node->edges + s_node->edgeCount);
+      next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
     }
     frontier = next;
     next.clear();
@@ -200,11 +200,10 @@ bool p_bfs_omp(Tree *tree, int &key) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->edgeCount == 0)
+        if (isFound || s_node->degree == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->edges,
-                    s_node->edges + s_node->edgeCount);
+        next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
       }
     }
     frontier = next;
@@ -214,16 +213,16 @@ bool p_bfs_omp(Tree *tree, int &key) {
   return isFound;
 }
 
-bool p_iddfs_worker(Tree *tree, int offset, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_snode(offset);
+bool p_iddfs_worker(Tree *tree, int number, int &key, size_t depLeft) {
+  S_Node *s_node = tree->read_snode(number);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
     return false;
 
   bool isFound = false;
-// #pragma omp parallel for
-  for (int i = 0; i < s_node->edgeCount; i++) {
+  // #pragma omp parallel for
+  for (int i = 0; i < s_node->degree; i++) {
     if (isFound)
       continue;
     isFound |= p_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1);
@@ -243,11 +242,11 @@ bool p_iddfs_omp(Tree *tree, int &key, size_t maxDepth) {
   return isFound;
 }
 
-bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres) {
+bool p_hybrid_omp(Tree *tree, int number, int &key, int &brhThres) {
   std::vector<int> frontier;
   std::vector<int> next;
 
-  frontier.push_back(offset);
+  frontier.push_back(number);
   bool isFound = false;
   int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
@@ -259,15 +258,15 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->edgeCount == 0)
+        if (isFound || s_node->degree == 0)
           continue;
-        if (s_node->edgeCount > brhThres) {
+        if (s_node->degree > brhThres) {
 #pragma omp critical
           next.insert(next.end(), s_node->edges,
-                      s_node->edges + s_node->edgeCount);
+                      s_node->edges + s_node->degree);
         } else {
 #pragma omp parallel for
-          for (int i = 0; i < s_node->edgeCount; i++) {
+          for (int i = 0; i < s_node->degree; i++) {
             if (isFound)
               continue;
             isFound |= p_hybrid_omp(tree, s_node->edges[i], key, brhThres);
@@ -282,7 +281,7 @@ bool p_hybrid_omp(Tree *tree, int offset, int &key, int &brhThres) {
   return isFound;
 }
 
-bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize) {
+bool p_test_omp(Tree *tree, int number, int &key, int &maxFSize) {
   std::vector<int> frontier;
   std::vector<int> next;
 
@@ -299,11 +298,10 @@ bool p_test_omp(Tree *tree, int offset, int &key, int &maxFSize) {
         rfCnt++;
         if (s_node->key == key)
           isFound = true;
-        if (isFound || s_node->edgeCount == 0)
+        if (isFound || s_node->degree == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->edges,
-                    s_node->edges + s_node->edgeCount);
+        next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
       }
     }
     frontier = next;

@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   tree.dump_tree();
 
-  printf("TreeNode Count: %lld\n", tree.nodeCount);
+  printf("TreeNode Count: %lld\n", tree.numNode);
 
   return 0;
 }

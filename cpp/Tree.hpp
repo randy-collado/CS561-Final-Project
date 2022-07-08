@@ -15,10 +15,14 @@
 
 struct TreeNode {
   TreeNode(size_t branchingFactor)
-      : maxChildren(branchingFactor), childrenCount(0),
-        maxValues(branchingFactor), numValues(0), level(0), key(-1) {}
-  size_t maxChildren;
-  size_t childrenCount;
+      : maxDegree(branchingFactor), degree(0), maxValues(branchingFactor),
+        numValues(0), level(0), key(-1) {}
+  ~TreeNode() {
+    for (int i = 0; i < 8; i++)
+      delete children[i];
+  }
+  int maxDegree;
+  int degree;
   size_t maxValues;
   size_t numValues;
   size_t level;
@@ -31,10 +35,10 @@ struct TreeNode {
 class Tree {
 public:
   Tree(size_t branchingFactor)
-      : nodeCount(0), head(nullptr), branch(branchingFactor), maxLevel(0),
+      : numNode(0), root(nullptr), branch(branchingFactor), maxLevel(0),
         ts_init(false) {}
 
-  ~Tree() {}
+  ~Tree() { delete root; }
 
   void init_serializer(std::string filename, int rw);
   void init_metadata();
@@ -43,30 +47,30 @@ public:
             std::vector<int> &values);
 
   void seq_fill(long numInserts, std::vector<int> &keys,
-            std::vector<int> &values);
+                std::vector<int> &values);
 
   void add(int key, int value);
 
   void dump_tree();
 
-  const TreeNode *get_head_ref() { return head; }
+  const TreeNode *get_head_ref() { return root; }
 
   size_t get_max_level() { return maxLevel; }
 
-  S_Node *read_snode(int offset);
-  S_MetaData* read_smetadata();
+  S_Node *read_snode(int number);
+  S_MetaData *read_smetadata();
 
-  size_t nodeCount;
+  size_t numNode;
 
 private:
   void add_impl(int key, int value);
 
-  void dump_node(TreeNode *head);
+  void dump_node(TreeNode *root);
 
   S_Node *node_to_snode(TreeNode *node);
   S_Node *node_to_aligned_snode(TreeNode *node);
 
-  TreeNode *head;
+  TreeNode *root;
   size_t branch;
   size_t maxLevel;
   Serializer TS;
