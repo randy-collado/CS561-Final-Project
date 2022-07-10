@@ -18,19 +18,17 @@ struct GraphNode {
   ~GraphNode();
   int key, number;
   int degree, numValues;
-  std::vector<int> edges;
+  std::vector<GraphNode *> edges;
   int values[8];
 };
 
 class Graph {
 public:
-  Graph() : numNode(0), gs_init(false) {}
-  ~Graph() { delete[] nodes; }
+  Graph() : numNode(0), maxDegree(0), gs_init(false) {}
+  ~Graph();
 
   void init_serializer(std::string filename, int rw);
   void init_metadata();
-
-  void add(int key, int value);
 
   void dump_graph();
 
@@ -38,16 +36,16 @@ public:
   S_MetaData *read_smetadata();
 
   int numNode;
+  int maxDegree;
 
 private:
-  void add_impl(int key, int value);
 
-  void dump_node(GraphNode *root);
+  void dump_node(GraphNode *node);
 
   S_Node *node_to_snode(GraphNode *node);
   S_Node *node_to_aligned_snode(GraphNode *node);
 
-  GraphNode *nodes;
+  std::vector<GraphNode> nodes;
   Serializer gs;
   bool gs_init;
 };
