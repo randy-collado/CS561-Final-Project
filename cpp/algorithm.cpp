@@ -1,11 +1,13 @@
 #include "algorithm.hpp"
 
-bool s_dfs(Tree *tree, int number, int &key) {
+bool s_dfs(Tree *tree, int &key) { return _s_dfs(tree, 0, key); }
+
+bool _s_dfs(Tree *tree, int number, int &key) {
   S_Node *s_node = tree->read_snode(number);
   if (s_node->key == key)
     return true;
   for (auto i = 0; i < s_node->degree; i++) {
-    if (s_dfs(tree, s_node->edges[i], key))
+    if (_s_dfs(tree, s_node->edges[i], key))
       return true;
   }
   return false;

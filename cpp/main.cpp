@@ -48,12 +48,7 @@ int main(int argc, char **argv) {
   int targetKey = -1;
   printf("Target Key: %d\n", targetKey);
 
-  auto begin = std::chrono::high_resolution_clock::now();
-  auto res = s_dfs(&tree, 0, targetKey);
-  auto end = std::chrono::high_resolution_clock::now();
-  auto ms_int =
-      std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  printf("Serial DFS: %lld ms, result: %d.\n", ms_int.count(), res);
+  timeAndPrint(&tree, targetKey, s_dfs, "Serial DFS");
 
   timeAndPrint(&tree, targetKey, s_dfs_2, "Serial DFS (No recursive)");
 
@@ -69,24 +64,20 @@ int main(int argc, char **argv) {
 
     timeAndPrint(&tree, targetKey, p_bfs_omp, "Parallel BFS (Omp)");
 
-    // timeAndPrint(&tree, targetKey, p_dfs_omp, "Parallel DFS (Omp)");
-    begin = std::chrono::high_resolution_clock::now();
-    std::cout << p_dfs_omp(&tree, targetKey, 8) << std::endl;
-    end = std::chrono::high_resolution_clock::now();
-    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-    printf("Parallel DFS (Omp): %lld ms.\n", ms_int.count());
+    testPDFS(&tree, targetKey, 8);
   }
 
   // Test 2: Algorithm Performance
   printf("==============Test 2: Random Key + Variable fSize============\n");
   int64_t total_sbfs = 0;
-  int64_t total_sdfs = 0;
+
+  int64_t total_sdfs1 = 0;
+  int64_t total_sdfs2 = 0;
   int64_t total_pbfs = 0;
 
   int numfSize = 10;
   std::vector<int> fSizeList = {1, 2, 4, 6, 8, 10, 12, 14, 16, 20};
-  std::vector<int64_t> total_pdfs;
-  total_pdfs.reserve(numfSize);
+  std::vector<int64_t> total_pdfs(numfSize, 0);
 
   int numTests = 20;
 
@@ -99,14 +90,10 @@ int main(int argc, char **argv) {
 
     std::cout << "============ Round " << i + 1 << " Target Key " << targetKey
               << " ============" << std::endl;
-    auto begin = std::chrono::high_resolution_clock::now();
-    auto res = s_dfs(&tree, 0, targetKey);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto ms_int =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-    printf("Serial DFS: %lld ms, result: %d\n", ms_int.count(), res);
 
-    total_sdfs +=
+    total_sdfs1 += timeAndPrint(&tree, targetKey, s_dfs, "Serial DFS");
+
+    total_sdfs2 +=
         timeAndPrint(&tree, targetKey, s_dfs_2, "Serial DFS (No recursive)");
 
     total_sbfs += timeAndPrint(&tree, targetKey, s_bfs, "Serial BFS");
@@ -124,7 +111,8 @@ int main(int argc, char **argv) {
   printf("=================== FINAL RESULT =================\n");
   std::cout << "Cancellation Env: " << omp_get_cancellation() << std::endl;
   printf("Serial BFS : %lld ms.\n", total_sbfs);
-  printf("Serial DFS : %lld ms.\n", total_sdfs);
+  printf("Serial DFS : %lld ms.\n", total_sdfs1);
+  printf("Serial DFS (No recursive): %lld ms.\n", total_sdfs2);
   printf("Parallel BFS : %lld ms.\n", total_pbfs);
 
   for (int i = 0; i < numfSize; i++) {

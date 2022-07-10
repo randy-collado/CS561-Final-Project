@@ -10,7 +10,8 @@
 // *nodeQ); void p_bfs(S_Node *curNode, int key, bool *isFound, std::queue<TreeNode
 // *> *nodeQ); void p_sche(S_Node *root, int type, int key);
 bool s_bfs(Tree *tree, int &key);
-bool s_dfs(Tree *tree, int number, int &key);
+bool s_dfs(Tree *tree, int &key);
+bool _s_dfs(Tree *tree, int number, int &key);
 bool s_dfs_2(Tree *tree, int &key);
 
 bool s_iddfs_worker(Tree *tree, int number, int &key, size_t depLeft);
