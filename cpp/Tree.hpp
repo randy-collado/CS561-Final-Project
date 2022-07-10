@@ -14,28 +14,24 @@
 #pragma once
 
 struct TreeNode {
-  TreeNode(size_t branchingFactor)
-      : maxDegree(branchingFactor), degree(0), maxValues(branchingFactor),
-        numValues(0), level(0), key(-1) {}
-  ~TreeNode() {
-    for (int i = 0; i < 8; i++)
-      delete children[i];
+  TreeNode(int maxDegree)
+      : key(-1), maxDegree(maxDegree), degree(0), maxValues(maxDegree),
+        numValues(0), level(0) {
+    children = new TreeNode *[maxDegree];
   }
-  int maxDegree;
-  int degree;
-  size_t maxValues;
-  size_t numValues;
-  size_t level;
-  int key;
+  ~TreeNode() { delete[] children; }
+  int number, key;
+  int maxDegree, degree;
+  int maxValues, numValues;
+  int level;
   int values[8];
-  TreeNode *children[8];
-  int number;
+  TreeNode **children;
 };
 
 class Tree {
 public:
-  Tree(size_t branchingFactor)
-      : numNode(0), root(nullptr), branch(branchingFactor), maxLevel(0),
+  Tree(int maxDegree)
+      : numNode(0), root(nullptr), maxDegree(maxDegree), maxLevel(0),
         ts_init(false) {}
 
   ~Tree() { delete root; }
@@ -55,12 +51,12 @@ public:
 
   const TreeNode *get_head_ref() { return root; }
 
-  size_t get_max_level() { return maxLevel; }
+  int get_max_level() { return maxLevel; }
 
   S_Node *read_snode(int number);
   S_MetaData *read_smetadata();
 
-  size_t numNode;
+  int numNode;
 
 private:
   void add_impl(int key, int value);
@@ -71,8 +67,8 @@ private:
   S_Node *node_to_aligned_snode(TreeNode *node);
 
   TreeNode *root;
-  size_t branch;
-  size_t maxLevel;
+  int maxDegree;
+  int maxLevel;
   Serializer TS;
   bool ts_init;
 };

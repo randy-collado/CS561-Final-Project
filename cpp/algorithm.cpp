@@ -70,7 +70,6 @@ bool p_dfs_omp(Tree *tree, int &key, int f_size) {
 
   initFrontier.push_back(0);
   bool isFound;
-  std::cout << "Cancel " << omp_get_cancellation() << std::endl;
 #pragma omp parallel
   {
 #pragma omp single

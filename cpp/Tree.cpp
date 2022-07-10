@@ -21,7 +21,7 @@ void Tree::dump_tree() {
   S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(512, sizeof(S_MetaData));
 #endif
   s_metadata->numNode = numNode;
-  s_metadata->maxDegree = branch;
+  s_metadata->maxDegree = maxDegree;
   TS.writeMetadata(s_metadata);
   // Dump node recursively
   dump_node(this->root);
@@ -69,14 +69,14 @@ S_MetaData* Tree::read_smetadata(){
 
 void Tree::init_metadata(){
   S_MetaData* sm = read_smetadata();
-  branch = sm->maxDegree;
+  maxDegree = sm->maxDegree;
   numNode = sm->numNode;
 }
 
 
 void Tree::add_impl(int key, int value) {
   if (root == nullptr) {
-    root = new TreeNode(branch);
+    root = new TreeNode(maxDegree);
     root->number = numNode++;
     root->key = key;
     root->values[root->numValues++] = value;
@@ -90,14 +90,14 @@ void Tree::add_impl(int key, int value) {
   frontier.push_back(root);
 
   while (frontier.size() > 0) {
-    for (size_t i = 0; i < frontier.size(); i++) {
+    for (auto i = 0; i < frontier.size(); i++) {
       TreeNode *curNode = frontier[i];
       if (curNode->key == key) {
         if (curNode->numValues < curNode->maxValues)
           curNode->values[curNode->numValues++] = value;
         return;
       } else if (curNode->degree < curNode->maxDegree) {
-        TreeNode *node = new TreeNode(branch);
+        TreeNode *node = new TreeNode(maxDegree);
         node->number = numNode++;
         node->key = key;
         node->values[node->numValues++] = value;
@@ -165,7 +165,7 @@ void Tree::dump_node(TreeNode *root) {
   TS.writeNode(s_node, root->number);
 
 #pragma omp parallel for
-  for (size_t i = 0; i < root->degree; i++) {
+  for (auto i = 0; i < root->degree; i++) {
     dump_node(root->children[i]);
   }
 
@@ -196,7 +196,7 @@ S_Node *Tree::node_to_snode(
 
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
-  for (size_t i = 0; i < node->degree; ++i) {
+  for (auto i = 0; i < node->degree; ++i) {
     s_node->edges[i] = node->children[i]->number;
   }
   return s_node;
@@ -214,7 +214,7 @@ S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
 
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
-  for (size_t i = 0; i < node->degree; ++i) {
+  for (auto i = 0; i < node->degree; ++i) {
     s_node->edges[i] = node->children[i]->number;
   }
   return s_node;
