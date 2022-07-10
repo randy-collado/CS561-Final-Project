@@ -1,4 +1,4 @@
-#include "algorithm.hpp"
+#include "TreeAlgorithm.hpp"
 
 bool s_dfs(Tree *tree, int &key) { return _s_dfs(tree, 0, key); }
 
@@ -39,24 +39,33 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
     if (isFound) {
       break;
     }
+
+    // Read stack top
     S_Node *s_node = tree->read_snode(frontier.back());
 
+    // Found it?
     if (s_node->key == key) {
       isFound = true;
       break;
     }
 
+    // Pop stack top
     frontier.pop_back();
 
+    // Insert its children
     frontier.insert(frontier.end(), s_node->edges,
                     s_node->edges + s_node->degree);
+    
+    // Stack size larger than fSize?
     while (frontier.size() > fSize) {
       if (isFound)
         break;
+      // Split in two
       std::vector<int> frontier_new(frontier.begin() + frontier.size() / 2,
                                     frontier.end());
       frontier.resize(frontier.size() / 2);
 #pragma omp task shared(isFound)
+      // Give one half to another thread
       if (_p_dfs_omp(tree, key, frontier_new, fSize)) {
         isFound = true;
 #pragma omp cancel taskgroup
@@ -210,7 +219,7 @@ bool p_bfs_omp(Tree *tree, int &key) {
     frontier = next;
     next.clear();
   }
-  printf("Read file count = %d\n", rfCnt);
+  // printf("Read file count = %d\n", rfCnt);
   return isFound;
 }
 

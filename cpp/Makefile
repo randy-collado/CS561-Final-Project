@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -O3 -std=c++17 -fopenmp -D_GNU_SOURCE
-OBJS = algorithm.o Tree.o Serializer.o
+OBJS = TreeAlgorithm.o Tree.o Serializer.o
 
 build: $(OBJS) main.o TreeGenerator.o
 	$(CC) $(CFLAGS) $(OBJS) main.o -o main
@@ -12,8 +12,8 @@ main.o: main.cpp
 Serializer.o: Serializer.cpp Serializer.hpp
 	$(CC) $(CFLAGS) -c Serializer.cpp
 
-algorithm.o: algorithm.cpp algorithm.hpp
-	$(CC) $(CFLAGS) -c algorithm.cpp
+TreeAlgorithm.o: TreeAlgorithm.cpp TreeAlgorithm.hpp
+	$(CC) $(CFLAGS) -c TreeAlgorithm.cpp
 
 tree.o: Tree.cpp Tree.hpp
 	$(CC) $(CFLAGS) -c Tree.cpp

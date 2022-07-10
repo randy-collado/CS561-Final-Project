@@ -1,5 +1,5 @@
 #include "Tree.hpp"
-#include "algorithm.hpp"
+#include "TreeAlgorithm.hpp"
 #include <chrono>
 #include <cstring>
 #include <ctime>
@@ -37,12 +37,11 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  std::cout << "Cancellation Env: " << omp_get_cancellation() << std::endl;
   Tree tree(0);
   tree.init_serializer(argv[1], 0);
   tree.init_metadata();
 
-  // Test 1: direct IO + tuning fSize in parallel DFS
+  // Test 1: Direct IO + tuning fSize in parallel DFS
   printf("==============Test 1: Not Exist Key + Variable Thread "
          "Number============\n");
   int targetKey = -1;
@@ -88,8 +87,8 @@ int main(int argc, char **argv) {
 
     int targetKey = (i == numTests) ? -1 : distrib(gen);
 
-    std::cout << "============ Round " << i + 1 << " Target Key " << targetKey
-              << " ============" << std::endl;
+    printf("============ Round %d Target Key %d ============\n", i + 1,
+           targetKey);
 
     total_sdfs1 += timeAndPrint(&tree, targetKey, s_dfs, "Serial DFS");
 
@@ -109,11 +108,11 @@ int main(int argc, char **argv) {
   }
 
   printf("=================== FINAL RESULT =================\n");
-  std::cout << "Cancellation Env: " << omp_get_cancellation() << std::endl;
-  printf("Serial BFS : %lld ms.\n", total_sbfs);
-  printf("Serial DFS : %lld ms.\n", total_sdfs1);
+  printf("Cancellation Env: %d\n", omp_get_cancellation());
+  printf("Serial BFS: %lld ms.\n", total_sbfs);
+  printf("Serial DFS: %lld ms.\n", total_sdfs1);
   printf("Serial DFS (No recursive): %lld ms.\n", total_sdfs2);
-  printf("Parallel BFS : %lld ms.\n", total_pbfs);
+  printf("Parallel BFS: %lld ms.\n", total_pbfs);
 
   for (int i = 0; i < numfSize; i++) {
     printf("PDFS (Omp), fSize %d: %lld ms.\n", fSizeList[i], total_pdfs[i]);

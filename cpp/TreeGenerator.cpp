@@ -1,5 +1,5 @@
 #include "Tree.hpp"
-#include "algorithm.hpp"
+#include "TreeAlgorithm.hpp"
 #include <chrono>
 #include <ctime>
 #include <iostream>
