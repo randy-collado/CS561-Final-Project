@@ -39,23 +39,18 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
     if (isFound) {
       break;
     }
-
     // Read stack top
     S_Node *s_node = tree->read_snode(frontier.back());
-
     // Found it?
     if (s_node->key == key) {
       isFound = true;
       break;
     }
-
     // Pop stack top
     frontier.pop_back();
-
     // Insert its children
     frontier.insert(frontier.end(), s_node->edges,
                     s_node->edges + s_node->degree);
-    
     // Stack size larger than fSize?
     while (frontier.size() > fSize) {
       if (isFound)
@@ -175,21 +170,25 @@ bool s_bfs(Tree *tree, int &key) {
   frontier.push_back(0);
 
   bool isFound = false;
-  int rfCnt = 0;
+  // int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
     for (size_t i = 0; i < frontier.size(); i++) {
+      if (isFound)
+        continue;
       S_Node *s_node = tree->read_snode(frontier[i]);
-      rfCnt++;
-      if (s_node->key == key)
+      // rfCnt++;
+      if (s_node->key == key) {
         isFound = true;
-      if (isFound || s_node->degree == 0)
+        continue;
+      }
+      if (s_node->degree == 0)
         continue;
       next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
     }
     frontier = next;
     next.clear();
   }
-  printf("Read file count = %d\n", rfCnt);
+  // printf("Read file count = %d\n", rfCnt);
   return isFound;
 }
 
@@ -200,17 +199,21 @@ bool p_bfs_omp(Tree *tree, int &key) {
   frontier.push_back(0);
 
   bool isFound = false;
-  int rfCnt = 0;
+  // int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
 #pragma omp parallel
     {
 #pragma omp for nowait
       for (size_t i = 0; i < frontier.size(); i++) {
+        if (isFound)
+          continue;
         S_Node *s_node = tree->read_snode(frontier[i]);
-        rfCnt++;
-        if (s_node->key == key)
+        // rfCnt++;
+        if (s_node->key == key) {
           isFound = true;
-        if (isFound || s_node->degree == 0)
+          continue;
+        }
+        if (s_node->degree == 0)
           continue;
 #pragma omp critical
         next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
