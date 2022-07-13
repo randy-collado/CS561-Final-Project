@@ -31,9 +31,8 @@ bool s_dfs_2(Tree *tree, int &key) {
   return false;
 }
 
-bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
-  bool isFound = false;
-
+void _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize,
+                bool &isFound) {
 #pragma omp taskgroup
   while (!frontier.empty()) {
     if (isFound) {
@@ -59,15 +58,11 @@ bool _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize) {
       std::vector<int> frontier_new(frontier.begin() + frontier.size() / 2,
                                     frontier.end());
       frontier.resize(frontier.size() / 2);
-#pragma omp task shared(isFound)
+#pragma omp task shared(tree, key, fSize, isFound)
       // Give one half to another thread
-      if (_p_dfs_omp(tree, key, frontier_new, fSize)) {
-        isFound = true;
-#pragma omp cancel taskgroup
-      }
+      _p_dfs_omp(tree, key, frontier_new, fSize, isFound);
     }
   }
-  return isFound;
 }
 
 bool p_dfs_omp(Tree *tree, int &key, int f_size) {
@@ -75,13 +70,11 @@ bool p_dfs_omp(Tree *tree, int &key, int f_size) {
   int fSize = f_size;
 
   initFrontier.push_back(0);
-  bool isFound;
+  bool isFound = false;
 #pragma omp parallel
-  {
-#pragma omp single
-    isFound = _p_dfs_omp(tree, key, initFrontier, fSize);
-#pragma omp taskwait
-  }
+#pragma omp single nowait
+  { _p_dfs_omp(tree, key, initFrontier, fSize, isFound); }
+
   return isFound;
 }
 
