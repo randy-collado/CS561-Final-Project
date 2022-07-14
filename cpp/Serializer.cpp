@@ -66,9 +66,9 @@ void Serializer::openFile(std::string filepath, MODE mode) {
 #endif
 }
 
-bool Serializer::writeNode(S_Node *node, int number) {
+bool Serializer::writeNode(S_Node *node, int id) {
   size_t offset = sizeof(S_MetaData);
-  offset += number * sizeof(S_Node);
+  offset += id * sizeof(S_Node);
   return writeNodeWithOffset(node, offset);
 }
 
@@ -112,9 +112,9 @@ bool Serializer::writeNodeWithOffset(S_Node *node, size_t offset) {
   }
   return true;
 }
-S_Node *Serializer::readNode(int number) {
+S_Node *Serializer::readNode(int id) {
   size_t offset = sizeof(S_MetaData);
-  offset += number * sizeof(S_Node);
+  offset += id * sizeof(S_Node);
   return readNodeFromOffset(offset);
 }
 

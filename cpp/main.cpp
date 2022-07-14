@@ -1,4 +1,4 @@
-#include "Tree.hpp"
+#include "GraphAlgorithm.hpp"
 #include "TreeAlgorithm.hpp"
 #include <chrono>
 #include <cstring>

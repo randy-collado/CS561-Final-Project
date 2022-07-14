@@ -13,10 +13,13 @@
 
 #pragma once
 
+#define MAX_DEGREE 237
+#define BLOCK_SIZE 512
+
 struct GraphNode {
-  GraphNode() : degree(0), numValues(0), key(-1) {}
+  GraphNode() : key(-1), id(0), degree(0), numValues(0) {}
   ~GraphNode();
-  int key, number;
+  int key, id;
   int degree, numValues;
   std::vector<GraphNode *> edges;
   int values[8];
@@ -32,14 +35,13 @@ public:
 
   void dump_graph();
 
-  S_Node *read_snode(int number);
+  S_Node *read_snode(int id);
   S_MetaData *read_smetadata();
 
   int numNode;
   int maxDegree;
 
 private:
-
   void dump_node(GraphNode *node);
 
   S_Node *node_to_snode(GraphNode *node);

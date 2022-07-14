@@ -16,9 +16,9 @@ void Tree::init_serializer(std::string filename, int rw) {
 void Tree::dump_tree() {
   // Dump metadata
 #ifdef _WIN32
-  S_MetaData *s_metadata = (S_MetaData *)_aligned_malloc(sizeof(S_MetaData), 512);
+  S_MetaData *s_metadata = (S_MetaData *)_aligned_malloc(sizeof(S_MetaData), BLOCK_SIZE);
 #else
-  S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(512, sizeof(S_MetaData));
+  S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(BLOCK_SIZE, sizeof(S_MetaData));
 #endif
   s_metadata->numNode = numNode;
   s_metadata->maxDegree = maxDegree;
@@ -57,8 +57,8 @@ void Tree::seq_fill(long numInserts, std::vector<int> &keys,
   }
 }
 
-S_Node *Tree::read_snode(int number) {
-  S_Node *s_node = TS.readNode(number);
+S_Node *Tree::read_snode(int id) {
+  S_Node *s_node = TS.readNode(id);
   return s_node;
 }
 
@@ -77,7 +77,7 @@ void Tree::init_metadata(){
 void Tree::add_impl(int key, int value) {
   if (root == nullptr) {
     root = new TreeNode(maxDegree);
-    root->number = numNode++;
+    root->id = numNode++;
     root->key = key;
     root->values[root->numValues++] = value;
     root->level = 0;
@@ -98,7 +98,7 @@ void Tree::add_impl(int key, int value) {
         return;
       } else if (curNode->degree < curNode->maxDegree) {
         TreeNode *node = new TreeNode(maxDegree);
-        node->number = numNode++;
+        node->id = numNode++;
         node->key = key;
         node->values[node->numValues++] = value;
         node->level = curNode->level + 1;
@@ -119,7 +119,7 @@ void Tree::add_impl(int key, int value) {
   // std::deque<TreeNode *> queue = std::deque<TreeNode *>();
   // if (root == nullptr) {
   //   root = new TreeNode(branch);
-  //   root->number = numNode++;
+  //   root->id = numNode++;
   //   root->key = key;
   //   root->values[root->numValues++] = value;
   //   root->level = 0;
@@ -137,7 +137,7 @@ void Tree::add_impl(int key, int value) {
   //     return;
   //   } else if (currentNode->degree < branch) {
   //     TreeNode *node = new TreeNode(branch);
-  //     node->number = numNode++;
+  //     node->id = numNode++;
   //     node->key = key;
   //     node->values[node->numValues++] = value;
   //     node->level = currentNode->level + 1;
@@ -162,7 +162,7 @@ void Tree::dump_node(TreeNode *root) {
     return;
 
   auto s_node = node_to_aligned_snode(root);
-  TS.writeNode(s_node, root->number);
+  TS.writeNode(s_node, root->id);
 
 #pragma omp parallel for
   for (auto i = 0; i < root->degree; i++) {
@@ -181,7 +181,7 @@ void Tree::dump_node(TreeNode *root) {
   //   // Aligned
   //   auto s_node_ptr = node_to_aligned_snode(currentNode);
 
-  //   TS.writeNodeWithOffset(s_node_ptr, 512 * currentNode->number);
+  //   TS.writeNodeWithOffset(s_node_ptr, BLOCK_SIZE * currentNode->id);
 
   //   queue.insert(queue.end(), currentNode->edges,
   //                currentNode->edges + currentNode->degree);
@@ -197,16 +197,16 @@ S_Node *Tree::node_to_snode(
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
   for (auto i = 0; i < node->degree; ++i) {
-    s_node->edges[i] = node->children[i]->number;
+    s_node->edges[i] = node->children[i]->id;
   }
   return s_node;
 }
 
 S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
 #ifdef _WIN32
-  S_Node *s_node = (S_Node *)_aligned_malloc(sizeof(S_Node), 512);
+  S_Node *s_node = (S_Node *)_aligned_malloc(sizeof(S_Node), BLOCK_SIZE);
 #else
-  S_Node *s_node = (S_Node *)aligned_alloc(512, sizeof(S_Node));
+  S_Node *s_node = (S_Node *)aligned_alloc(BLOCK_SIZE, sizeof(S_Node));
 #endif
 
   s_node->key = node->key;
@@ -215,7 +215,7 @@ S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
   std::memcpy(s_node->payloads, node->values, node->numValues);
 
   for (auto i = 0; i < node->degree; ++i) {
-    s_node->edges[i] = node->children[i]->number;
+    s_node->edges[i] = node->children[i]->id;
   }
   return s_node;
 }

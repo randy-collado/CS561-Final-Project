@@ -17,7 +17,7 @@ struct S_Node {
   int key;                       // 4 Bytes
   int payloads[8];               // 32 Bytes
   unsigned short degree;         // 2 Bytes
-  unsigned short edges[237];     // 512 - 38 bytes, offset of neighbor nodes
+  unsigned short edges[237];     // 512 - 38 bytes, id of neighbor nodes
 } __attribute__((aligned(512))); // GCC extension to align a struct
 
 struct S_Node_2 {
@@ -38,8 +38,8 @@ public:
   bool writeMetadata(S_MetaData *metadata);
   S_MetaData *readMetadata();
 
-  bool writeNode(S_Node *node, int number);
-  S_Node *readNode(int number);
+  bool writeNode(S_Node *node, int id);
+  S_Node *readNode(int id);
 
   void openFile(std::string filepath, MODE mode);
 

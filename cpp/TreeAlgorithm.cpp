@@ -2,8 +2,8 @@
 
 bool s_dfs(Tree *tree, int &key) { return _s_dfs(tree, 0, key); }
 
-bool _s_dfs(Tree *tree, int number, int &key) {
-  S_Node *s_node = tree->read_snode(number);
+bool _s_dfs(Tree *tree, int id, int &key) {
+  S_Node *s_node = tree->read_snode(id);
   if (s_node->key == key)
     return true;
   for (auto i = 0; i < s_node->degree; i++) {
@@ -41,10 +41,11 @@ void _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize,
     // Read stack top
     S_Node *s_node = tree->read_snode(frontier.back());
     // Found it?
-    if (s_node->key == key) {
+    if (s_node->key == key)
       isFound = true;
+    if (isFound)
       break;
-    }
+    
     // Pop stack top
     frontier.pop_back();
     // Insert its children
@@ -78,8 +79,8 @@ bool p_dfs_omp(Tree *tree, int &key, int f_size) {
   return isFound;
 }
 
-bool s_iddfs_worker(Tree *tree, int number, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_snode(number);
+bool s_iddfs_worker(Tree *tree, int id, int &key, size_t depLeft) {
+  S_Node *s_node = tree->read_snode(id);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
@@ -219,8 +220,8 @@ bool p_bfs_omp(Tree *tree, int &key) {
   return isFound;
 }
 
-bool p_iddfs_worker(Tree *tree, int number, int &key, size_t depLeft) {
-  S_Node *s_node = tree->read_snode(number);
+bool p_iddfs_worker(Tree *tree, int id, int &key, size_t depLeft) {
+  S_Node *s_node = tree->read_snode(id);
   if (s_node->key == key)
     return true;
   if (depLeft == 0)
@@ -248,11 +249,11 @@ bool p_iddfs_omp(Tree *tree, int &key, size_t maxDepth) {
   return isFound;
 }
 
-bool p_hybrid_omp(Tree *tree, int number, int &key, int &brhThres) {
+bool p_hybrid_omp(Tree *tree, int id, int &key, int &brhThres) {
   std::vector<int> frontier;
   std::vector<int> next;
 
-  frontier.push_back(number);
+  frontier.push_back(id);
   bool isFound = false;
   int rfCnt = 0;
   while (!isFound && frontier.size() > 0) {
@@ -287,7 +288,7 @@ bool p_hybrid_omp(Tree *tree, int number, int &key, int &brhThres) {
   return isFound;
 }
 
-bool p_test_omp(Tree *tree, int number, int &key, int &maxFSize) {
+bool p_test_omp(Tree *tree, int id, int &key, int &maxFSize) {
   std::vector<int> frontier;
   std::vector<int> next;
 

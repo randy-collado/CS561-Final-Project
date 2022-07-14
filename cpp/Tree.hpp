@@ -13,6 +13,8 @@
 
 #pragma once
 
+#define BLOCK_SIZE 512
+
 struct TreeNode {
   TreeNode(int maxDegree)
       : key(-1), maxDegree(maxDegree), degree(0), maxValues(maxDegree),
@@ -20,7 +22,7 @@ struct TreeNode {
     children = new TreeNode *[maxDegree];
   }
   ~TreeNode() { delete[] children; }
-  int number, key;
+  int id, key;
   int maxDegree, degree;
   int maxValues, numValues;
   int level;
@@ -53,7 +55,7 @@ public:
 
   int get_max_level() { return maxLevel; }
 
-  S_Node *read_snode(int number);
+  S_Node *read_snode(int id);
   S_MetaData *read_smetadata();
 
   int numNode;
