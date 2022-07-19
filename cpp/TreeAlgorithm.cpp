@@ -7,7 +7,7 @@ bool _s_dfs(Tree *tree, int id, int &key) {
   if (s_node->key == key)
     return true;
   for (auto i = 0; i < s_node->degree; i++) {
-    if (_s_dfs(tree, s_node->edges[i], key))
+    if (_s_dfs(tree, s_node->data[i], key))
       return true;
   }
   return false;
@@ -25,8 +25,8 @@ bool s_dfs_2(Tree *tree, int &key) {
 
     frontier.pop_back();
 
-    frontier.insert(frontier.end(), s_node->edges,
-                    s_node->edges + s_node->degree);
+    frontier.insert(frontier.end(), s_node->data,
+                    s_node->data + s_node->degree);
   }
   return false;
 }
@@ -49,8 +49,8 @@ void _p_dfs_omp(Tree *tree, int &key, std::vector<int> &frontier, int &fSize,
     // Pop stack top
     frontier.pop_back();
     // Insert its children
-    frontier.insert(frontier.end(), s_node->edges,
-                    s_node->edges + s_node->degree);
+    frontier.insert(frontier.end(), s_node->data,
+                    s_node->data + s_node->degree);
     // Stack size larger than fSize?
     while (frontier.size() > fSize) {
       if (isFound)
@@ -86,7 +86,7 @@ bool s_iddfs_worker(Tree *tree, int id, int &key, size_t depLeft) {
   if (depLeft == 0)
     return false;
   for (int i = 0; i < s_node->degree; i++) {
-    if (s_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1))
+    if (s_iddfs_worker(tree, s_node->data[i], key, depLeft - 1))
       return true;
   }
   return false;
@@ -177,7 +177,7 @@ bool s_bfs(Tree *tree, int &key) {
       }
       if (s_node->degree == 0)
         continue;
-      next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
+      next.insert(next.end(), s_node->data, s_node->data + s_node->degree);
     }
     frontier = next;
     next.clear();
@@ -210,7 +210,7 @@ bool p_bfs_omp(Tree *tree, int &key) {
         if (s_node->degree == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
+        next.insert(next.end(), s_node->data, s_node->data + s_node->degree);
       }
     }
     frontier = next;
@@ -232,7 +232,7 @@ bool p_iddfs_worker(Tree *tree, int id, int &key, size_t depLeft) {
   for (int i = 0; i < s_node->degree; i++) {
     if (isFound)
       continue;
-    isFound |= p_iddfs_worker(tree, s_node->edges[i], key, depLeft - 1);
+    isFound |= p_iddfs_worker(tree, s_node->data[i], key, depLeft - 1);
   }
   return isFound;
 }
@@ -269,14 +269,14 @@ bool p_hybrid_omp(Tree *tree, int id, int &key, int &brhThres) {
           continue;
         if (s_node->degree > brhThres) {
 #pragma omp critical
-          next.insert(next.end(), s_node->edges,
-                      s_node->edges + s_node->degree);
+          next.insert(next.end(), s_node->data,
+                      s_node->data + s_node->degree);
         } else {
 #pragma omp parallel for
           for (int i = 0; i < s_node->degree; i++) {
             if (isFound)
               continue;
-            isFound |= p_hybrid_omp(tree, s_node->edges[i], key, brhThres);
+            isFound |= p_hybrid_omp(tree, s_node->data[i], key, brhThres);
           }
         }
       }
@@ -308,7 +308,7 @@ bool p_test_omp(Tree *tree, int id, int &key, int &maxFSize) {
         if (isFound || s_node->degree == 0)
           continue;
 #pragma omp critical
-        next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
+        next.insert(next.end(), s_node->data, s_node->data + s_node->degree);
       }
     }
     frontier = next;

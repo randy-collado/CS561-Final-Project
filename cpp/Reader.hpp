@@ -11,4 +11,5 @@ void readData(std::string path){
   // Determine which data structure it is
   // Initialize correspond data structure
   // and return pointer (or object?)
+  // Note: maybe a better idea to merge tree & graph class?
 }

@@ -19,8 +19,8 @@ bool s_dfs(Graph *graph, int &key) {
       frontier.pop_back();
       vis.insert(tmpNum);
 
-      frontier.insert(frontier.end(), s_node->edges,
-                      s_node->edges + s_node->degree);
+      frontier.insert(frontier.end(), s_node->data,
+                      s_node->data + s_node->degree);
     } else {
       frontier.pop_back();
     }
@@ -56,7 +56,7 @@ bool s_bfs(Graph *graph, int &key) {
       }
       if (s_node->degree == 0)
         continue;
-      next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
+      next.insert(next.end(), s_node->data, s_node->data + s_node->degree);
     }
     frontier = next;
     next.clear();
@@ -97,7 +97,7 @@ bool p_bfs(Graph *graph, int &key) {
       if (s_node->degree == 0)
         continue;
 #pragma omp critical
-      next.insert(next.end(), s_node->edges, s_node->edges + s_node->degree);
+      next.insert(next.end(), s_node->data, s_node->data + s_node->degree);
     }
     frontier = next;
     next.clear();
@@ -127,7 +127,7 @@ bool s_bfs_alt(Graph *graph, int &key) {
       if (s_node->degree == 0)
         continue;
       for (int i = 0; i < s_node->degree; i++) {
-        int nextNum = s_node->edges[i];
+        int nextNum = s_node->data[i];
         if (vis.find(nextNum) == vis.end()) {
           next.insert(nextNum);
           vis.insert(nextNum);
@@ -165,7 +165,7 @@ bool p_bfs_alt(Graph *graph, int &key) {
       if (s_node->degree == 0)
         continue;
       for (int i = 0; i < s_node->degree; i++) {
-        int nextNum = s_node->edges[i];
+        int nextNum = s_node->data[i];
 #pragma omp critical
         if (vis.find(nextNum) == vis.end()) {
           next.insert(nextNum);
