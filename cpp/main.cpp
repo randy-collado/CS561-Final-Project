@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  Tree tree(0);
+  Tree tree(0, 0);
   tree.init_serializer(argv[1], 0);
   tree.init_metadata();
 

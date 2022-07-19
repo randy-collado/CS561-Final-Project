@@ -17,13 +17,16 @@
 #define BLOCK_SIZE 512
 
 struct GraphNode {
-  GraphNode() : key(-1), id(0), degree(0), numValues(0) {}
+  GraphNode(byte numValues = 0)
+      : key(-1), id(0), degree(0), numValues(numValues) {
+    values = new u_short[numValues];
+  }
   ~GraphNode();
   int key, id;
   int degree;
   byte numValues;
   std::vector<GraphNode *> edges;
-  byte values[8];
+  u_short *values;
 };
 
 class Graph {

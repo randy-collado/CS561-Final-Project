@@ -16,9 +16,9 @@ int main(int argc, char **argv) {
 
   int max_branch = std::stoi(argv[3]);
 
-  printf("Branch size: %d\n", max_branch);
+  printf("Max Branch: %d\n", max_branch);
 
-  Tree tree(max_branch);
+  Tree tree(max_branch, 8);
   std::vector<int> keys, values;
 
   tree.seq_fill(num_elements, keys, values);

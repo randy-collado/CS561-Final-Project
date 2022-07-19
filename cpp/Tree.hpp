@@ -17,25 +17,26 @@
 #define MAX_DEGREE 253
 
 struct TreeNode {
-  TreeNode(int maxDegree)
-      : key(-1), maxDegree(maxDegree), degree(0), maxValues(maxDegree),
+  TreeNode(int maxDegree, int maxValues)
+      : key(-1), maxDegree(maxDegree), degree(0), maxValues(maxValues),
         numValues(0), level(0) {
     children = new TreeNode *[maxDegree];
+    values = new u_short[maxValues];
   }
   ~TreeNode() { delete[] children; }
   int id, key;
-  byte maxDegree, degree;
+  int maxDegree, degree;
   byte maxValues, numValues;
   int level;
-  byte values[8];
+  u_short *values;
   TreeNode **children;
 };
 
 class Tree {
 public:
-  Tree(int maxDegree)
+  Tree(int maxDegree, int maxValues)
       : numNode(0), root(nullptr), maxDegree(maxDegree), maxLevel(0),
-        ts_init(false) {}
+        maxValues(maxValues), ts_init(false) {}
 
   ~Tree() { delete root; }
 
@@ -72,6 +73,7 @@ private:
   TreeNode *root;
   int maxDegree;
   int maxLevel;
+  int maxValues;
   Serializer TS;
   bool ts_init;
 };

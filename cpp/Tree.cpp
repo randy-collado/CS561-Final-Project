@@ -78,7 +78,7 @@ void Tree::init_metadata() {
 
 void Tree::add_impl(int key, int value) {
   if (root == nullptr) {
-    root = new TreeNode(maxDegree);
+    root = new TreeNode(maxDegree, maxValues);
     root->id = numNode++;
     root->key = key;
     root->values[root->numValues++] = value;
@@ -99,7 +99,7 @@ void Tree::add_impl(int key, int value) {
           curNode->values[curNode->numValues++] = value;
         return;
       } else if (curNode->degree < curNode->maxDegree) {
-        TreeNode *node = new TreeNode(maxDegree);
+        TreeNode *node = new TreeNode(maxDegree, maxValues);
         node->id = numNode++;
         node->key = key;
         node->values[node->numValues++] = value;
@@ -193,11 +193,12 @@ void Tree::dump_node(TreeNode *root) {
 S_Node *Tree::node_to_snode(
     TreeNode *node) { // returns a pointer declared by new, user should delete
   S_Node *s_node = new S_Node();
+
+  assert(node->degree + node->numValues <= MAX_DEGREE);
+
   s_node->key = node->key;
   s_node->degree = node->degree;
   s_node->pSize = node->numValues;
-
-  assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
 
   for (auto i = 0; i < node->degree; ++i) {
     s_node->data[i] = node->children[i]->id;
@@ -213,12 +214,11 @@ S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
 #else
   S_Node *s_node = (S_Node *)aligned_alloc(BLOCK_SIZE, sizeof(S_Node));
 #endif
-  
+  assert(node->degree + node->numValues <= MAX_DEGREE);
+
   s_node->key = node->key;
   s_node->degree = node->degree;
   s_node->pSize = node->numValues;
-
-  assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
 
   for (auto i = 0; i < node->degree; ++i) {
     s_node->data[i] = node->children[i]->id;
