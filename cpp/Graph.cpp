@@ -75,7 +75,7 @@ S_Node *Graph::node_to_snode(GraphNode *node) {
 
   while (node->degree - edgeOffset > maxd) {
     if (maxd <= 0) {
-      printf("Degree exceeded! Max size is (250-pSize)*250\n");
+      printf("Degree exceeded! Max size is (253-pSize)*253\n");
       exit(1);
     }
     maxd--; // Use one space for extra s_node
@@ -124,7 +124,7 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
 
   while (node->degree - edgeOffset > maxd) {
     if (maxd <= 0) {
-      printf("Degree exceeded! Max size is (250-pSize)*250\n");
+      printf("Degree exceeded! Max size is (253-pSize)*253\n");
       exit(1);
     }
     maxd--; // Use one space for extra s_node

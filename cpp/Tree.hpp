@@ -14,7 +14,7 @@
 #pragma once
 
 #define BLOCK_SIZE 512
-#define MAX_DEGREE 250
+#define MAX_DEGREE 253
 
 struct TreeNode {
   TreeNode(int maxDegree)
