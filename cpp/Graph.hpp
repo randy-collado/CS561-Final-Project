@@ -13,21 +13,22 @@
 
 #pragma once
 
-#define MAX_DEGREE 237
+#define MAX_DEGREE 250
 #define BLOCK_SIZE 512
 
 struct GraphNode {
   GraphNode() : key(-1), id(0), degree(0), numValues(0) {}
   ~GraphNode();
   int key, id;
-  int degree, numValues;
+  int degree;
+  byte numValues;
   std::vector<GraphNode *> edges;
-  int values[8];
+  byte values[8];
 };
 
 class Graph {
 public:
-  Graph() : numNode(0), maxDegree(0), gs_init(false) {}
+  Graph() : numNode(0), maxDegree(0), numExtSNode(0), gs_init(false) {}
   ~Graph();
 
   void init_serializer(std::string filename, int rw);
@@ -40,6 +41,7 @@ public:
 
   int numNode;
   int maxDegree;
+  int numExtSNode;
 
 private:
   void dump_node(GraphNode *node);

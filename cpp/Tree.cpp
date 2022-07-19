@@ -16,9 +16,11 @@ void Tree::init_serializer(std::string filename, int rw) {
 void Tree::dump_tree() {
   // Dump metadata
 #ifdef _WIN32
-  S_MetaData *s_metadata = (S_MetaData *)_aligned_malloc(sizeof(S_MetaData), BLOCK_SIZE);
+  S_MetaData *s_metadata =
+      (S_MetaData *)_aligned_malloc(sizeof(S_MetaData), BLOCK_SIZE);
 #else
-  S_MetaData *s_metadata = (S_MetaData *)aligned_alloc(BLOCK_SIZE, sizeof(S_MetaData));
+  S_MetaData *s_metadata =
+      (S_MetaData *)aligned_alloc(BLOCK_SIZE, sizeof(S_MetaData));
 #endif
   s_metadata->numNode = numNode;
   s_metadata->maxDegree = maxDegree;
@@ -63,17 +65,16 @@ S_Node *Tree::read_snode(int id) {
   return s_node;
 }
 
-S_MetaData* Tree::read_smetadata(){
+S_MetaData *Tree::read_smetadata() {
   S_MetaData *s_metadata = TS.readMetadata();
   return s_metadata;
 }
 
-void Tree::init_metadata(){
-  S_MetaData* sm = read_smetadata();
+void Tree::init_metadata() {
+  S_MetaData *sm = read_smetadata();
   maxDegree = sm->maxDegree;
   numNode = sm->numNode;
 }
-
 
 void Tree::add_impl(int key, int value) {
   if (root == nullptr) {
@@ -109,8 +110,8 @@ void Tree::add_impl(int key, int value) {
         curNode->children[curNode->degree++] = node;
         return;
       }
-      std::vector<TreeNode *> next_private(
-          curNode->children, curNode->children + curNode->degree);
+      std::vector<TreeNode *> next_private(curNode->children,
+                                           curNode->children + curNode->degree);
       next.insert(next.end(), next_private.begin(), next_private.end());
     }
     frontier = next;
@@ -194,12 +195,15 @@ S_Node *Tree::node_to_snode(
   S_Node *s_node = new S_Node();
   s_node->key = node->key;
   s_node->degree = node->degree;
+  s_node->pSize = node->numValues;
 
-  std::memcpy(s_node->payloads, node->values, node->numValues);
+  assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
 
   for (auto i = 0; i < node->degree; ++i) {
-    s_node->edges[i] = node->children[i]->id;
+    s_node->data[i] = node->children[i]->id;
   }
+  std::memcpy(s_node->data + s_node->degree, node->values, node->numValues);
+
   return s_node;
 }
 
@@ -209,14 +213,17 @@ S_Node *Tree::node_to_aligned_snode(TreeNode *node) {
 #else
   S_Node *s_node = (S_Node *)aligned_alloc(BLOCK_SIZE, sizeof(S_Node));
 #endif
-
+  
   s_node->key = node->key;
   s_node->degree = node->degree;
+  s_node->pSize = node->numValues;
 
-  std::memcpy(s_node->payloads, node->values, node->numValues);
+  assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
 
   for (auto i = 0; i < node->degree; ++i) {
-    s_node->edges[i] = node->children[i]->id;
+    s_node->data[i] = node->children[i]->id;
   }
+  std::memcpy(s_node->data + s_node->degree, node->values, node->numValues);
+
   return s_node;
 }

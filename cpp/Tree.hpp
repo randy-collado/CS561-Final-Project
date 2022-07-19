@@ -14,6 +14,7 @@
 #pragma once
 
 #define BLOCK_SIZE 512
+#define MAX_DEGREE 250
 
 struct TreeNode {
   TreeNode(int maxDegree)
@@ -23,10 +24,10 @@ struct TreeNode {
   }
   ~TreeNode() { delete[] children; }
   int id, key;
-  int maxDegree, degree;
-  int maxValues, numValues;
+  byte maxDegree, degree;
+  byte maxValues, numValues;
   int level;
-  int values[8];
+  byte values[8];
   TreeNode **children;
 };
 
