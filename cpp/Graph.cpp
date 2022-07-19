@@ -23,6 +23,7 @@ void Graph::dump_graph() {
 #endif
   s_metadata->numNode = numNode;
   s_metadata->maxDegree = maxDegree;
+  s_metadata->dataType = 2;
   gs.writeMetadata(s_metadata);
 
 #pragma omp parallel for

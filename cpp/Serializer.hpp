@@ -28,6 +28,7 @@ struct S_Node_2 {
 struct S_MetaData {
   int numNode;
   int maxDegree;
+  int dataType; // Tree: 1, Graph: 2, and others
 } __attribute__((aligned(512)));
 
 class Serializer {

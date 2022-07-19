@@ -22,6 +22,7 @@ void Tree::dump_tree() {
 #endif
   s_metadata->numNode = numNode;
   s_metadata->maxDegree = maxDegree;
+  s_metadata->dataType = 1;
   TS.writeMetadata(s_metadata);
   // Dump node recursively
   dump_node(this->root);
