@@ -13,6 +13,14 @@ void Graph::init_serializer(std::string filename, int rw) {
   }
 }
 
+bool Graph::init_serializer(Serializer *sz) {
+  if (!sz)
+    return false;
+  gs = *sz;
+  gs_init = true;
+  return true;
+}
+
 void Graph::dump_graph() {
   // Dump metadata
 #ifdef _WIN32
@@ -30,7 +38,7 @@ void Graph::dump_graph() {
 #pragma omp parallel for
   // Dump each node
   for (int i = 0; i < numNode; i++) {
-    dump_node(&nodes[i]);
+    dump_node(nodes[i]);
   }
 }
 
@@ -48,16 +56,18 @@ void Graph::init_metadata() {
   S_MetaData *sm = read_smetadata();
   maxDegree = sm->maxDegree;
   numNode = sm->numNode;
+  printf("%d %d\n", maxDegree, numNode);
 }
 
 void Graph::dump_node(GraphNode *node) {
   if (!gs_init) {
-    std::cerr << "[ERROR] Serializer was not initialized" << std::endl;
+    fprintf(stderr, "[ERROR] Serializer was not initialized\n");
     exit(1);
   }
-  if (!node)
+  if (!node) {
+    fprintf(stderr, "[ERROR] Null pointer\n");
     return;
-
+  }
   auto s_node = node_to_aligned_snode(node);
   gs.writeNode(s_node, node->id);
 }
@@ -86,7 +96,7 @@ S_Node *Graph::node_to_snode(GraphNode *node) {
     ext_s_node->degree = std::min(MAX_DEGREE, edgeLeft - maxd);
     ext_s_node->pSize = 0;
     for (auto i = 0; i < ext_s_node->degree; i++) {
-      ext_s_node->data[i] = node->edges[edgeOffset + i]->id;
+      ext_s_node->data[i] = node->edges[edgeOffset + i];
     }
 
     edgeOffset += ext_s_node->degree;
@@ -98,11 +108,12 @@ S_Node *Graph::node_to_snode(GraphNode *node) {
     numExtSNode++;
   }
   for (auto i = edgeOffset; i < node->degree; ++i) {
-    s_node->data[i - edgeOffset] = node->edges[i]->id;
+    s_node->data[i - edgeOffset] = node->edges[i];
   }
   s_node->degree = node->degree - edgeOffset;
   assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
-  std::memcpy(s_node->data + s_node->degree, node->values, node->numValues);
+  std::memcpy(s_node->data + s_node->degree, node->values.data(),
+              node->numValues * sizeof(u_short));
 
   return s_node;
 }
@@ -122,7 +133,8 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
   int edgeOffset = 0;
   int cnt = 0;
 
-  while (node->degree - edgeOffset > maxd) {
+  // Edges left larger than space in s_node->data
+  while (edgeLeft > maxd) {
     if (maxd <= 0) {
       printf("Degree exceeded! Max size is (253-pSize)*253\n");
       exit(1);
@@ -139,7 +151,7 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
     ext_s_node->degree = std::min(MAX_DEGREE, edgeLeft - maxd);
     ext_s_node->pSize = 0;
     for (auto i = 0; i < ext_s_node->degree; i++) {
-      ext_s_node->data[i] = node->edges[edgeOffset + i]->id;
+      ext_s_node->data[i] = node->edges[edgeOffset + i];
     }
 
     edgeOffset += ext_s_node->degree;
@@ -150,12 +162,12 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
     gs.writeNode(ext_s_node, numNode + numExtSNode);
     numExtSNode++;
   }
-  for (auto i = edgeOffset; i < node->degree; ++i) {
-    s_node->data[i - edgeOffset] = node->edges[i]->id;
+  for (auto i = edgeOffset; i < node->degree; i++) {
+    s_node->data[i - edgeOffset] = node->edges[i];
   }
   s_node->degree = node->degree - edgeOffset;
   assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
-  std::memcpy(s_node->data + s_node->degree, node->values, node->numValues);
-
+  std::memcpy(s_node->data + s_node->degree, node->values.data(),
+              node->numValues * sizeof(u_short));
   return s_node;
 }

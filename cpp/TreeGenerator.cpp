@@ -1,4 +1,3 @@
-#include "Tree.hpp"
 #include "TreeAlgorithm.hpp"
 #include <chrono>
 #include <ctime>
@@ -7,7 +6,8 @@
 
 int main(int argc, char **argv) {
   if (argc < 4) {
-    std::cerr << "[ERROR]: Usage is ./generator <data_path> <num_elements> <branch> "
+    std::cerr << "[ERROR]: Usage is ./generator <data_path> <num_elements> "
+                 "<max_branch> (<max_values)"
               << std::endl;
     exit(1);
   }
@@ -15,13 +15,16 @@ int main(int argc, char **argv) {
   printf("# of elements: %d\n", num_elements);
 
   int max_branch = std::stoi(argv[3]);
-
   printf("Max Branch: %d\n", max_branch);
 
-  Tree tree(max_branch, 8);
-  std::vector<int> keys, values;
+  int max_values = num_elements;
+  if (argc >= 5) {
+    max_values = std::stoi(argv[4]);
+  }
 
-  tree.seq_fill(num_elements, keys, values);
+  Tree tree(max_branch, max_values);
+
+  tree.fill(num_elements, num_elements);
 
   tree.init_serializer(argv[1], 1);
 

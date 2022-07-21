@@ -16,28 +16,29 @@
 #define MAX_DEGREE 253
 #define BLOCK_SIZE 512
 
-struct GraphNode {
-  GraphNode(byte numValues = 0)
-      : key(-1), id(0), degree(0), numValues(numValues) {
-    values = new u_short[numValues];
-  }
+class GraphNode {
+public:
+  GraphNode() : key(-1), id(0), degree(0), numValues(0) {}
   ~GraphNode();
   int key, id;
   int degree;
   byte numValues;
-  std::vector<GraphNode *> edges;
-  u_short *values;
+  std::vector<int> edges;
+  std::vector<u_short> values;
 };
 
 class Graph {
 public:
-  Graph() : numNode(0), maxDegree(0), numExtSNode(0), gs_init(false) {}
-  ~Graph();
+  Graph(int _maxDegree = 0)
+      : numNode(0), maxDegree(_maxDegree), numExtSNode(0), gs_init(false) {}
+  ~Graph() {}
 
   void init_serializer(std::string filename, int rw);
+  bool init_serializer(Serializer *sz);
   void init_metadata();
 
   void dump_graph();
+  void dump_node(GraphNode *node);
 
   S_Node *read_snode(int id);
   S_MetaData *read_smetadata();
@@ -46,13 +47,12 @@ public:
   int maxDegree;
   int numExtSNode;
 
+  Serializer gs;
+  
 private:
-  void dump_node(GraphNode *node);
-
   S_Node *node_to_snode(GraphNode *node);
   S_Node *node_to_aligned_snode(GraphNode *node);
 
-  std::vector<GraphNode> nodes;
-  Serializer gs;
+  std::vector<GraphNode *> nodes;
   bool gs_init;
 };

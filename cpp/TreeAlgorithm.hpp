@@ -3,6 +3,8 @@
 #include <omp.h>
 #include <queue>
 #include <vector>
+
+#pragma once
 // #include <future>
 // #include <thread>
 
