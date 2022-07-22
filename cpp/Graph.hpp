@@ -22,9 +22,9 @@ public:
   ~GraphNode();
   int key, id;
   int degree;
-  byte numValues;
+  uint8_t numValues;
   std::vector<int> edges;
-  std::vector<u_short> values;
+  std::vector<uint16_t> values;
 };
 
 class Graph {
@@ -48,7 +48,7 @@ public:
   int numExtSNode;
 
   Serializer gs;
-  
+
 private:
   S_Node *node_to_snode(GraphNode *node);
   S_Node *node_to_aligned_snode(GraphNode *node);
