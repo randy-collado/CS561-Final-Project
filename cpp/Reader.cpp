@@ -5,26 +5,27 @@
 
 #pragma once
 
-void readData(std::string path) {
+Graph *readData(std::string path) {
   Serializer *sz = new Serializer();
   sz->openFile(path, MODE::READ);
 
   S_MetaData *sm = sz->readMetadata();
+  if (!sm)
+    return nullptr;
+
+  Graph *g;
   switch (sm->dataType) {
   case 1:
     /* Tree */
-    Tree *tree = new Tree(0, 0);
-    tree->init_serializer(sz);
+    g = new Tree(0, 0);
     break;
   case 2:
     /* Graph */
-    Graph *graph = new Graph();
-    graph->init_serializer(sz);
+    g = new Graph();
     break;
   default:
-    break;
+    return nullptr;
   }
-  // Determine which data structure it is
-  // Initialize correspond data structure
-  // and return pointer (or object?)
+  g->init_serializer(sz);
+  return g;
 }

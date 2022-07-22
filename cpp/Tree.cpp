@@ -1,8 +1,6 @@
 #include "Tree.hpp"
 
 bool Tree::add(int key, int value) {
-  // printf("%d %d\n", key, value);
-  //  printf("0x%x\n", root);
   if (!root) {
     root = new TreeNode(maxDegree, maxValues);
     root->id = numNode++;
