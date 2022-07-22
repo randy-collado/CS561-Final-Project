@@ -3,8 +3,8 @@
 class TreeNode : public GraphNode {
 public:
   int maxDegree, level;
-  byte maxValues;
-  TreeNode(int _maxDegree, byte _maxValues)
+  uint8_t maxValues;
+  TreeNode(int _maxDegree, uint8_t _maxValues)
       : GraphNode(), maxDegree(_maxDegree), maxValues(_maxValues) {}
 };
 

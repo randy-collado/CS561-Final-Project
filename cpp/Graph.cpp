@@ -1,5 +1,4 @@
 #include "Graph.hpp"
-#include <omp.h>
 
 void Graph::init_serializer(std::string filename, int rw) {
   if (rw == 0) {
@@ -78,7 +77,7 @@ S_Node *Graph::node_to_snode(GraphNode *node) {
   s_node->key = node->key;
   s_node->pSize = node->numValues;
 
-  byte maxd = MAX_DEGREE - s_node->pSize;
+  uint8_t maxd = MAX_DEGREE - s_node->pSize;
   int edgeLeft = node->degree;
   int edgeOffset = 0;
   int cnt = 0;
@@ -113,7 +112,7 @@ S_Node *Graph::node_to_snode(GraphNode *node) {
   s_node->degree = node->degree - edgeOffset;
   assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
   std::memcpy(s_node->data + s_node->degree, node->values.data(),
-              node->numValues * sizeof(u_short));
+              node->numValues * sizeof(uint16_t));
 
   return s_node;
 }
@@ -128,7 +127,7 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
   s_node->key = node->key;
   s_node->pSize = node->numValues;
 
-  byte maxd = MAX_DEGREE - s_node->pSize;
+  uint8_t maxd = MAX_DEGREE - s_node->pSize;
   int edgeLeft = node->degree;
   int edgeOffset = 0;
   int cnt = 0;
@@ -168,6 +167,6 @@ S_Node *Graph::node_to_aligned_snode(GraphNode *node) {
   s_node->degree = node->degree - edgeOffset;
   assert(s_node->degree + s_node->pSize <= MAX_DEGREE);
   std::memcpy(s_node->data + s_node->degree, node->values.data(),
-              node->numValues * sizeof(u_short));
+              node->numValues * sizeof(uint16_t));
   return s_node;
 }

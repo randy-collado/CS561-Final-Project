@@ -15,9 +15,9 @@ enum MODE { READ, WRITE, INVALID };
 
 struct S_Node {
   int key;                       // 4 Bytes
-  byte degree;                   // 1 Byte, degree (0~255)
-  byte pSize;                    // 1 Byte, payload size (0~255)
-  u_short data[253];             // 506 Bytes, edges then payloads
+  uint8_t degree;                // 1 Byte, degree (0~255)
+  uint8_t pSize;                 // 1 Byte, payload size (0~255)
+  uint16_t data[253];            // 506 Bytes, edges then payloads
 } __attribute__((aligned(512))); // GCC extension to align a struct
 
 struct S_MetaData {
